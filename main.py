@@ -3,17 +3,18 @@ import random
 import pygame as pg
 from pygame.locals import *
 import colors
+import blocks as blocks_mod
 
 screenWidth, screenHeight = 800, 500
 
 width, height = 8, 5 
-blocks = [[colors.WHITE for y in range(height)] for x in range(width)]
+blocks = [[blocks_mod.Block(colors.WHITE) for y in range(height)] for x in range(width)]
 
 def renderBlock(screen, blockX, blockY):
     blockWidth = screenWidth / (width * 1.0)
     blockHeight = screenHeight / (height * 1.0)
     rect = ((blockWidth * blockX, blockHeight * blockY), (blockWidth, blockHeight));
-    pg.draw.rect(screen, blocks[blockX][blockY], rect)
+    blocks[blockX][blockY].render(screen, rect)
 
 def render(screen):
     for x in range(width):
