@@ -1,0 +1,90 @@
+class Board {
+	int height;
+	int width;
+	Block[][] blocks;
+	MultiMap<PipeColor, Pipe> pipes;
+
+	Board(int height, int width) {
+		this.height = height;
+		this.width = width;
+		blocks = new Block[width][height]();
+	}
+
+	Block get(Point p);
+	Block get(int x, int y);
+	void set(Point p, Block block);
+	void set(int x, int y, Block block);
+
+	static Board buildBoard(File f) {
+		List<String> lines = f.readLines();
+		lines = Lists.reverse(lines); // so that bottom line will be in row 0
+
+		int width = lines.get(0).length;
+		int height = lines.size();
+		Board board = new Board(height, width);
+
+		for (int y = 0; y < height; y++) {
+			String line = lines.get(y);
+			if (line.length != width) {
+				throw new RuntimeException("misshapen board");
+			}
+
+			for(int x = 0; x < width; x++) {
+				char c = line.charAt(x);
+				Block b;
+				switch(c) {
+					case ' ':
+						b = EmptyBlock.getInstance();
+						break;
+					case '_':
+						b = new GroundBlock();
+						break;
+					case 'B':
+						b = new PipeBlock(BLUE);
+						break;
+					case 'R':
+						b = new PipeBlock(RED);
+						break;
+				}
+				board.set(new Point(x, y) b);
+			}
+		}
+		return board;
+	}
+
+	static MultiMap<PipeColor, Pipe> buildPipeMap(Board board) {
+
+		MultiMap<PipeColor, Pipe> pipes = new MultiHashMap<>();
+
+		int x = 0;
+		int y = 0;
+
+		while (x < board.width) {
+			while (y < board.height) {
+				if (board.get(x, y) instanceof PipeBlock) { //found a new pipe
+					Pipe pipe = buildPipe(board, x, y);
+					pipes.put(pipe.getColor(), pipe);
+					y = pipe.getTop().y; // skip to end of pipe
+				}
+				y++;
+			}
+			y = 0;
+			x++;
+		}
+		return pipes;
+	}
+
+	Pipe buildPipe(Board board, int bottomX, int bottomY) {
+		Point bottom = new Point(bottomX, bottomY);
+
+		// find top of pipe
+		int curY = bottomY;
+		while (board.get(bottomX, curY) instanceof PipeBlock) {
+			curY++;
+		}
+
+		Point top = new Point(bottomX, curY - 1);
+
+		return new Pipe(top, bottom);
+	}
+}

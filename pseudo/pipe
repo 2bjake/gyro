@@ -1,0 +1,92 @@
+class Pipe {
+	Board board;
+	Point top;
+	Point bottom;
+
+	Point maxTop;
+	Point maxBottom;
+	
+	Pipe(Board board, Point top, Point bottom) {
+		this.board = board;
+		this.top = top;
+		this.bottom = bottom;
+
+		maxTop = top;
+
+		int length = top.y - bottom.y + 1;
+
+		// find max bottom 
+		// Note: this assumes that there aren't pipes right below other pipes, if there are, then max bottom can't be precalculated
+		
+		maxBottom = new Point(bottom.x, bottom.y - length + 1);
+
+		for (int i = 1; i < length; i++) {
+			Point curPoint = new Point(bottom.x, bottom.y - i);
+			Block curBlock = board.get(curPoint);
+			if (curBlock != EmptyBlock.getInstance()) {
+				// TODO: if I'm disallowing pipes to bump, then I could validate here. curBlock shouldn't be a PipeBlock
+				maxBottom = new Point(bottom.x, bottom.y - i + 1);
+				break;
+			}
+		}
+
+		PipeBlock topBlock = board.get(top);
+		topBlock.setPart(TOP);
+		PipeBlock bottomBlock = board.get(bottom);
+		bottomBlock.setPart(BOTTOM);
+	}
+
+
+	void moveUp() {
+		if (canMoveUp()) {
+			board.get(top).setPart(MIDDLE);
+
+			top = new Point(top.x, top.y + 1);
+			Block newTopBlock = board.get(bottom);
+			newTopBlock.setPart(TOP);
+			board.set(top, newTopBlock);
+			board.set(bottom, EmptyBlock.getInstance());
+
+			bottom = new Point(bottom.x, bottom.y + 1);
+			Block newBottomBlock = board.get(bottom);
+			newBottomBlock.setPart(BOTTOM); 
+		}
+	}
+
+
+	void moveDown() {
+		if (canMoveDown()) {
+			board.get(bottom).setPart(MIDDLE);
+
+			bottom = new Point(bottom.x, bottom.y - 1);
+			Block newBottomBlock = board.get(top);
+			newBottomBlock.setPart(BOTTOM);
+			board.set(bottom, newBottomBlock);
+			board.set(top, EmptyBlock.getInstance());
+
+			top = new Point(top.x, top.y - 1);
+			Block newTopBlock = board.get(top);
+			newTopBlock.setPart(TOP);
+		}
+	}
+
+	void draw() {
+		for (block in blocks) {
+			block.draw();
+		}
+	}
+
+	bool canMoveDown() {
+		return bottom.y > maxBottom.y;
+	}
+	
+	bool canMoveUp() {
+		return top.y < maxTop.y;
+	}
+
+	PipeColor getColor() {
+		return board.get(top).color;
+	}
+}
+
+

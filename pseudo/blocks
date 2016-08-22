@@ -1,0 +1,49 @@
+class Block {
+	void draw(); //will take in screen & location info for block to draw itself in the right spot
+}
+
+class EmptyBlock extends Block {
+	static Block getInstance();
+}
+
+enum PipeColor {
+	RED, BLUE;
+}
+
+enum PipePart {
+	TOP, MIDDLE, BOTTOM;
+}
+
+class PipeBlock extends Block {
+	PipeColor color;
+	PipePart part;
+
+	PipeBlock(PipeColor color) {
+		this.color = color;
+		this.part = MIDDLE;
+	}
+
+	void setPart(PipePart part);
+
+	void draw() {
+		switch(part) {
+			case TOP:
+				drawTop();
+				break;
+			case MIDDLE:
+				drawMiddle();
+				break;
+			case BOTTOM:
+				drawBottom();
+				break;
+		}
+	}
+
+	private void drawTop();
+	private void drawMiddle();
+	private void drawBottom();
+}
+
+class GroundBlock extends Block {
+	
+}
