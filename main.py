@@ -1,31 +1,25 @@
 import sys
-import random
 import pygame as pg
 from pygame.locals import *
-import colors
-import blocks as blocks_mod
+from board import Board
 
-screenWidth, screenHeight = 800, 500
+SCREEN_WIDTH, SCREEN_HEIGHT = 800, 500
 
-width, height = 8, 5 
-blocks = [[blocks_mod.Block(colors.WHITE) for y in range(height)] for x in range(width)]
+BLOCK_SIZE = 100
 
-def renderBlock(screen, blockX, blockY):
-    blockWidth = screenWidth / (width * 1.0)
-    blockHeight = screenHeight / (height * 1.0)
-    rect = ((blockWidth * blockX, blockHeight * blockY), (blockWidth, blockHeight));
-    blocks[blockX][blockY].render(screen, rect)
+NUM_HORIZ_BLOCKS = SCREEN_WIDTH / BLOCK_SIZE
+NUM_VERT_BLOCKS = SCREEN_HEIGHT / BLOCK_SIZE
 
-def render(screen):
-    for x in range(width):
-        for y in range(height):
-            renderBlock(screen, x, y)
+def render(screen, board):
+    board.render(screen, BLOCK_SIZE)
 
 def main():
     pg.init()
     clock = pg.time.Clock()
 
-    screen = pg.display.set_mode((screenWidth, screenHeight), 0, 32)
+    board = Board(NUM_HORIZ_BLOCKS, NUM_VERT_BLOCKS)
+
+    screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
     pg.display.set_caption('Gyro')
 
     while True:
@@ -35,8 +29,7 @@ def main():
                 pg.quit()
                 sys.exit()
 
-        screen.fill(colors.BLACK)
-        render(screen)
+        render(screen, board)
         pg.display.update()
 
 if __name__ == '__main__': main()
