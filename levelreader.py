@@ -18,7 +18,7 @@ def create_board_from_file(file_name):
 
                 if c == ' ':
                     b = EmptyBlock()
-                elif c == '_':
+                elif c == 'T':
                     b = GroundBlock()
                 elif c == 'B':
                     b = PipeBlock(colors.BLUE)

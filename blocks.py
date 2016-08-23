@@ -20,14 +20,15 @@ class GroundBlock(Block):
         self.color = colors.WHITE
 
     def render(self, screen, rect):
+        #TODO: this code is very similar to the pipe top/bottom code. Share it.
         top_rect = pg.Rect(rect)
-        top_rect.height *= (1 - GROUND_HEIGHT_PERCENTAGE)
-        pg.draw.rect(screen, BACKGROUND_COLOR, top_rect)
+        top_rect.height *= GROUND_HEIGHT_PERCENTAGE
+        pg.draw.rect(screen, self.color, top_rect)
 
         bottom_rect = pg.Rect(rect)
         bottom_rect.top += top_rect.height
-        bottom_rect.height *= GROUND_HEIGHT_PERCENTAGE
-        pg.draw.rect(screen, self.color, bottom_rect)
+        bottom_rect.height *= (1 - GROUND_HEIGHT_PERCENTAGE)
+        pg.draw.rect(screen, BACKGROUND_COLOR, bottom_rect)
 
 class PipeBlock(Block):
     TOP = 1
@@ -53,13 +54,14 @@ class PipeBlock(Block):
 
     def render_top(self, screen, rect):
         top_rect = pg.Rect(rect)
-        top_rect.height *= (1 - GROUND_HEIGHT_PERCENTAGE)
-        pg.draw.rect(screen, BACKGROUND_COLOR, top_rect)
+        top_rect.height *= GROUND_HEIGHT_PERCENTAGE
+        pg.draw.rect(screen, self.color, top_rect)
 
         bottom_rect = pg.Rect(rect)
         bottom_rect.top += top_rect.height
-        bottom_rect.height *= GROUND_HEIGHT_PERCENTAGE
-        pg.draw.rect(screen, self.color, bottom_rect)
+        bottom_rect.height *= (1 - GROUND_HEIGHT_PERCENTAGE)
+        pg.draw.rect(screen, BACKGROUND_COLOR, bottom_rect)
+        self.render_middle(screen, rect)
 
     def render_middle(self, screen, rect):
         pipe_rect = pg.Rect(rect)
