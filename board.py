@@ -1,4 +1,4 @@
-from blocks import *
+from blocks import PipeBlock
 import colors
 import pygame as pg
 from collections import defaultdict
@@ -10,6 +10,7 @@ class Board:
         self.height = len(block_matrix[0])
         self.block_matrix = block_matrix
         self._create_pipes()
+        print self.pipes #remove me
 
     def render(self, screen, block_size):
         for x in range(self.width):
@@ -42,7 +43,7 @@ class Board:
 
     def _create_pipe(self, bottom_x, bottom_y):
         cur_y = bottom_y
-        while isinstance(self.block_matrix[bottom_x][cur_y], PipeBlock):
+        while isinstance(self.block_matrix[bottom_x][cur_y], PipeBlock): #BUG: when red pipe touches blue pipe
             cur_y += 1
         top_y = cur_y - 1
 

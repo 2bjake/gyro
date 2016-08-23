@@ -31,6 +31,7 @@ class GroundBlock(Block):
         pg.draw.rect(screen, BACKGROUND_COLOR, bottom_rect)
 
 class PipeBlock(Block):
+    ALL = 0
     TOP = 1
     MIDDLE = 2
     BOTTOM = 3
@@ -45,22 +46,28 @@ class PipeBlock(Block):
         self.position = position
 
     def render(self, screen, rect):
-        if self.position == PipeBlock.TOP:
+        self.render_background(screen, rect)
+        if self.position == PipeBlock.ALL:
+            self.render_all(screen, rect)
+        elif self.position == PipeBlock.TOP:
             self.render_top(screen, rect)
         elif self.position == PipeBlock.MIDDLE:
             self.render_middle(screen, rect)
         else:
             self.render_bottom(screen, rect)
 
+    def render_background(self, screen, rect):
+        pg.draw.rect(screen, BACKGROUND_COLOR, rect)
+
+    def render_all(self, screen, rect):
+        self.render_top(screen, rect)
+        self.render_bottom(screen, rect)
+
     def render_top(self, screen, rect):
         top_rect = pg.Rect(rect)
         top_rect.height *= GROUND_HEIGHT_PERCENTAGE
         pg.draw.rect(screen, self.color, top_rect)
 
-        bottom_rect = pg.Rect(rect)
-        bottom_rect.top += top_rect.height
-        bottom_rect.height *= (1 - GROUND_HEIGHT_PERCENTAGE)
-        pg.draw.rect(screen, BACKGROUND_COLOR, bottom_rect)
         self.render_middle(screen, rect)
 
     def render_middle(self, screen, rect):
@@ -71,13 +78,10 @@ class PipeBlock(Block):
         pg.draw.rect(screen, self.color, pipe_rect)
 
     def render_bottom(self, screen, rect):
-        top_rect = pg.Rect(rect)
-        top_rect.height *= (1 - GROUND_HEIGHT_PERCENTAGE)
-        pg.draw.rect(screen, BACKGROUND_COLOR, top_rect)
-
         bottom_rect = pg.Rect(rect)
-        bottom_rect.top += top_rect.height
-        bottom_rect.height *= GROUND_HEIGHT_PERCENTAGE
+        new_height = bottom_rect.height * GROUND_HEIGHT_PERCENTAGE
+        bottom_rect.top += (bottom_rect.height - new_height)
+        bottom_rect.height = new_height
         pg.draw.rect(screen, self.color, bottom_rect)
 
         self.render_middle(screen, rect)
