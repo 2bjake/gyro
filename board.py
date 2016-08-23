@@ -1,4 +1,4 @@
-from blocks import PipeBlock
+from blocks import *
 from person import Person
 import colors
 import pygame as pg
@@ -21,6 +21,17 @@ class Board:
     def move_pipes_up(self, color):
         for pipe in self.pipes[color]:
             pipe.move_up()
+
+    def resolve_collisions(self):
+        block_at_person = self.get_block(self.person.x, self.person.y)
+        block_below_person = self.get_block(self.person.x, self.person.y - 1)
+        if not isinstance(block_at_person, EmptyBlock):
+            if self.person.can_move(self.person.x, self.person.y + 1):
+                self.person.move_up()
+            else:
+                self.person.kill()
+        elif isinstance(block_below_person, EmptyBlock):
+            self.person.move_down()
 
     def get_render_rect(self, x, y, block_size):
         return pg.Rect((block_size * x, block_size * (self.height - y - 1)), (block_size, block_size))

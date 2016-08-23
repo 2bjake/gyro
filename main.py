@@ -29,18 +29,24 @@ def main():
             if event.type == QUIT:
                 pg.quit()
                 sys.exit()
-            elif is_key_event(event, KEYUP, K_a):
-                board.move_pipes_down(colors.BLUE)
-            elif is_key_event(event, KEYUP, K_s):
-                board.move_pipes_down(colors.RED)
-            elif is_key_event(event, KEYUP, K_q):
-                board.move_pipes_up(colors.BLUE)
-            elif is_key_event(event, KEYUP, K_w):
-                board.move_pipes_up(colors.RED)
-            elif is_key_event(event, KEYDOWN, K_LEFT):
-                board.person.move_left()
-            elif is_key_event(event, KEYDOWN, K_RIGHT):
-                board.person.move_right()
+
+        keys = pg.key.get_pressed()
+        if keys[pg.K_LEFT]:
+            board.person.move_left()
+        elif keys[pg.K_RIGHT]:
+            board.person.move_right()
+
+        if keys[pg.K_a]:
+            board.move_pipes_down(colors.BLUE)
+        else:
+            board.move_pipes_up(colors.BLUE)
+
+        if keys[pg.K_s]:
+            board.move_pipes_down(colors.RED)
+        else:
+            board.move_pipes_up(colors.RED)
+
+        board.resolve_collisions()
 
         render(screen, board)
         pg.display.update()
