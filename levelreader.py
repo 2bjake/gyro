@@ -8,7 +8,7 @@ def create_board_from_file(file_name):
         height = len(lines);
         width = len(lines[0])
 
-        board = Board(width, height)
+        block_matrix = [[Block() for y in range(height)] for x in range(width)]
 
         for y in range(0, height):
             line = lines[y]
@@ -27,6 +27,6 @@ def create_board_from_file(file_name):
                 else:
                     b = Block()
 
-                board.set_block(x, y, b)
+                block_matrix[x][y] = b
 
-        return board
+        return Board(block_matrix)

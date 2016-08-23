@@ -1,12 +1,15 @@
-import blocks
+from blocks import *
 import colors
 import pygame as pg
+from collections import defaultdict
+from pipe import Pipe
 
 class Board:
-    def __init__(self, width, height):
-        self.width = width
-        self.height = height
-        self.block_matrix = [[blocks.Block() for y in range(height)] for x in range(width)]
+    def __init__(self, block_matrix):
+        self.width = len(block_matrix)
+        self.height = len(block_matrix[0])
+        self.block_matrix = block_matrix
+        self._create_pipes()
 
     def render(self, screen, block_size):
         for x in range(self.width):
@@ -20,5 +23,27 @@ class Board:
     def set_block(self, x, y, block):
         self.block_matrix[x][y] = block
 
-#    def get_block(self, x, y):
-#        return self self.block_natrix[x][y]
+    def get_block(self, x, y):
+        return self.block_matrix[x][y]
+
+    def _create_pipes(self):
+        self.pipes = defaultdict(list)
+
+        x, y = 0, 0
+        while x < self.width:
+            while y < self.height:
+                block = self.block_matrix[x][y]
+                if isinstance(block, PipeBlock):
+                    (pipe, y) = self._create_pipe(x, y)
+                    self.pipes[block.color].append(pipe)
+                y += 1
+            x += 1
+            y = 0
+
+    def _create_pipe(self, bottom_x, bottom_y):
+        cur_y = bottom_y
+        while isinstance(self.block_matrix[bottom_x][cur_y], PipeBlock):
+            cur_y += 1
+        top_y = cur_y - 1
+
+        return (Pipe(self, bottom_x, top_y, bottom_y), top_y)
