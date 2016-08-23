@@ -15,18 +15,20 @@ def create_board_from_file(file_name):
             #TODO: if len(line) != width, freak out!
             for x in range(0, width):
                 c = line[x]
+                b = Block()
 
                 if c == ' ':
                     b = EmptyBlock()
-                elif c == 'T':
+                elif c == 'I':
                     b = GroundBlock()
                 elif c == 'B':
                     b = PipeBlock(colors.BLUE)
                 elif c == 'R':
                     b = PipeBlock(colors.RED)
-                else:
-                    b = Block()
+                elif c == 'P':
+                    b = EmptyBlock()
+                    person_x, person_y = x, y
 
                 block_matrix[x][y] = b
 
-        return Board(block_matrix)
+        return Board(block_matrix, person_x, person_y)

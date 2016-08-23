@@ -16,45 +16,46 @@ class EmptyBlock(Block):
         self.color = BACKGROUND_COLOR
 
 class GroundBlock(Block):
+
+    MIDDLE_GROUND_WIDTH_PERCENTAGE = 1
+    MIDDLE_GROUND_HEIGHT_PERCENTAGE = .125
+
     def __init__(self):
         self.color = colors.WHITE
 
     def render(self, screen, rect):
+        pg.draw.rect(screen, BACKGROUND_COLOR, rect)
+
         #TODO: this code is very similar to the pipe top/bottom code. Share it.
         top_rect = pg.Rect(rect)
-        top_rect.height *= GROUND_HEIGHT_PERCENTAGE
+        block_height = top_rect.height
+        ground_height = block_height * GROUND_HEIGHT_PERCENTAGE
+
+        top_rect.height = ground_height
         pg.draw.rect(screen, self.color, top_rect)
 
+        middle_rect = pg.Rect(rect)
+        middle_rect.height *= GroundBlock.MIDDLE_GROUND_HEIGHT_PERCENTAGE
+        middle_rect.top += block_height / 2.0 - middle_rect.height / 2.0
+        new_width = middle_rect.width * GroundBlock.MIDDLE_GROUND_WIDTH_PERCENTAGE
+        middle_rect.left += (middle_rect.width - new_width) / 2
+        middle_rect.width = new_width
+        pg.draw.rect(screen, self.color, middle_rect)
+
         bottom_rect = pg.Rect(rect)
-        bottom_rect.top += top_rect.height
-        bottom_rect.height *= (1 - GROUND_HEIGHT_PERCENTAGE)
-        pg.draw.rect(screen, BACKGROUND_COLOR, bottom_rect)
+        bottom_rect.height = ground_height
+        bottom_rect.top += (block_height - ground_height)
+        pg.draw.rect(screen, self.color, bottom_rect)
 
 class PipeBlock(Block):
-    ALL = 0
-    TOP = 1
-    MIDDLE = 2
-    BOTTOM = 3
-
-    PIPE_WIDTH_PERCENTAGE = .8
+    PIPE_WIDTH_PERCENTAGE = .7
 
     def __init__(self, color):
         self.color = color # TODO this should be a pipe color which translates to raw color
-        self.position = PipeBlock.MIDDLE
-
-    def set_position(self, position):
-        self.position = position
 
     def render(self, screen, rect):
         self.render_background(screen, rect)
-        if self.position == PipeBlock.ALL:
-            self.render_all(screen, rect)
-        elif self.position == PipeBlock.TOP:
-            self.render_top(screen, rect)
-        elif self.position == PipeBlock.MIDDLE:
-            self.render_middle(screen, rect)
-        else:
-            self.render_bottom(screen, rect)
+        self.render_middle(screen, rect)
 
     def render_background(self, screen, rect):
         pg.draw.rect(screen, BACKGROUND_COLOR, rect)
