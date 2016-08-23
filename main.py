@@ -24,7 +24,7 @@ def main():
     pg.display.set_caption('Gyro')
 
     while True:
-        clock.tick(50)
+        clock.tick(60)
         for event in pg.event.get():
             if event.type == QUIT:
                 pg.quit()

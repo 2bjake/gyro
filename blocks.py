@@ -1,7 +1,7 @@
 import pygame as pg
 import colors
 
-GROUND_HEIGHT_PERCENTAGE = .25
+GROUND_HEIGHT_PERCENTAGE = .125
 BACKGROUND_COLOR = colors.BLACK
 
 class Block:
@@ -34,13 +34,9 @@ class GroundBlock(Block):
         top_rect.height = ground_height
         pg.draw.rect(screen, self.color, top_rect)
 
-        middle_rect = pg.Rect(rect)
-        middle_rect.height *= GroundBlock.MIDDLE_GROUND_HEIGHT_PERCENTAGE
-        middle_rect.top += block_height / 2.0 - middle_rect.height / 2.0
-        new_width = middle_rect.width * GroundBlock.MIDDLE_GROUND_WIDTH_PERCENTAGE
-        middle_rect.left += (middle_rect.width - new_width) / 2
-        middle_rect.width = new_width
-        pg.draw.rect(screen, self.color, middle_rect)
+        start_pos = (top_rect.left, top_rect.top)
+        end_pos = (top_rect.left + top_rect.width, top_rect.top + block_height - 5)
+        pg.draw.line(screen, self.color, start_pos, end_pos, 5)
 
         bottom_rect = pg.Rect(rect)
         bottom_rect.height = ground_height
@@ -60,29 +56,9 @@ class PipeBlock(Block):
     def render_background(self, screen, rect):
         pg.draw.rect(screen, BACKGROUND_COLOR, rect)
 
-    def render_all(self, screen, rect):
-        self.render_top(screen, rect)
-        self.render_bottom(screen, rect)
-
-    def render_top(self, screen, rect):
-        top_rect = pg.Rect(rect)
-        top_rect.height *= GROUND_HEIGHT_PERCENTAGE
-        pg.draw.rect(screen, self.color, top_rect)
-
-        self.render_middle(screen, rect)
-
     def render_middle(self, screen, rect):
         pipe_rect = pg.Rect(rect)
         new_width = pipe_rect.width * PipeBlock.PIPE_WIDTH_PERCENTAGE
         pipe_rect.left += (pipe_rect.width - new_width) / 2
         pipe_rect.width = new_width
         pg.draw.rect(screen, self.color, pipe_rect)
-
-    def render_bottom(self, screen, rect):
-        bottom_rect = pg.Rect(rect)
-        new_height = bottom_rect.height * GROUND_HEIGHT_PERCENTAGE
-        bottom_rect.top += (bottom_rect.height - new_height)
-        bottom_rect.height = new_height
-        pg.draw.rect(screen, self.color, bottom_rect)
-
-        self.render_middle(screen, rect)
