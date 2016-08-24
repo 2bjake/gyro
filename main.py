@@ -24,7 +24,7 @@ def main():
     #level = "scrolling_colorful"
     level = "big"
     board = reader.create_board_from_file("levels/" + level)
-    board.set_view_width(SCREEN_WIDTH / BLOCK_SIZE)
+    board.view_width = SCREEN_WIDTH / BLOCK_SIZE
     screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
     pg.display.set_caption('GyroMine')
 
@@ -51,25 +51,10 @@ def main():
             elif keys[pg.K_DOWN]:
                 board.person.move_down()
 
-            if keys[pg.K_a] or keys[pg.K_b]:
-                board.move_pipes_down(colors.BLUE)
-            else:
-                board.move_pipes_up(colors.BLUE)
-
-            if keys[pg.K_s] or keys[pg.K_r]:
-                board.move_pipes_down(colors.RED)
-            else:
-                board.move_pipes_up(colors.RED)
-
-            if keys[pg.K_y]:
-                board.move_pipes_down(colors.YELLOW)
-            else:
-                board.move_pipes_up(colors.YELLOW)
-
-            if keys[pg.K_g]:
-                board.move_pipes_down(colors.GREEN)
-            else:
-                board.move_pipes_up(colors.GREEN)
+            board.move_pipes(colors.BLUE, keys[pg.K_a] or keys[pg.K_b])
+            board.move_pipes(colors.RED, keys[pg.K_s] or keys[pg.K_r])
+            board.move_pipes(colors.YELLOW, keys[pg.K_y])
+            board.move_pipes(colors.GREEN, keys[pg.K_g])
 
             board.resolve_collisions()
             board.adjust_view_port()

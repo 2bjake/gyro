@@ -11,7 +11,7 @@ class Person:
 
     def can_move(self, new_x, new_y):
         dest_block = self.board.get_block(new_x, new_y)
-        return isinstance(dest_block, blocks.EmptyBlock) or isinstance(dest_block, blocks.RopeBlock)
+        return not dest_block.is_solid
 
     def move_left(self):
         self.move(self.x - 1, self.y)
