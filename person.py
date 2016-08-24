@@ -5,36 +5,40 @@ import blocks
 class Person:
 	def __init__(self, board, x, y):
 		self.board = board
-		self.x = x
-		self.y = y
-		self.dead = False
+		self.initial_x = x
+		self.initial_y = y
+		self.reset()
 
 	def can_move(self, new_x, new_y):
 		dest_block = self.board.get_block(new_x, new_y)
 		return isinstance(dest_block, blocks.EmptyBlock) or isinstance(dest_block, blocks.RopeBlock)
 
 	def move_left(self):
-		new_x = self.x - 1
-		if not self.dead and self.can_move(new_x, self.y):
-			self.x = new_x
+		self.move(self.x - 1, self.y)
 
 	def move_right(self):
-		new_x = self.x + 1
-		if not self.dead and self.can_move(new_x, self.y):
-			self.x = new_x
+		self.move(self.x + 1, self.y)
 
 	def move_up(self):
-		new_y = self.y + 1
-		if not self.dead and self.can_move(self.x, new_y):
-			self.y = new_y
+		self.move(self.x, self.y + 1)
 
 	def move_down(self):
-		new_y = self.y - 1
-		if not self.dead and self.can_move(self.x, new_y):
+		self.move(self.x, self.y - 1)
+
+	def move(self, new_x, new_y):
+		if self.dead:
+			self.reset()
+		elif self.can_move(new_x, new_y):
+			self.x = new_x
 			self.y = new_y
 
 	def kill(self):
 		self.dead = True
+
+	def reset(self):
+		self.dead = False
+		self.x = self.initial_x
+		self.y = self.initial_y
 
 	def render(self, screen, block_size):
 		if not self.dead:

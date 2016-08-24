@@ -21,11 +21,12 @@ def main():
     clock = pg.time.Clock()
 
     #level = "rope"
-    level = "scrolling_colorful"
+    #level = "scrolling_colorful"
+    level = "big"
     board = reader.create_board_from_file("levels/" + level)
     board.set_view_width(SCREEN_WIDTH / BLOCK_SIZE)
     screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
-    pg.display.set_caption('Gyro')
+    pg.display.set_caption('GyroMine')
 
     time = 0
 
@@ -36,6 +37,8 @@ def main():
             if event.type == QUIT:
                 pg.quit()
                 sys.exit()
+            if is_key_event(event, KEYUP, K_o):
+                board.person.reset()
 
         if time % 3 == 0:
             keys = pg.key.get_pressed()
