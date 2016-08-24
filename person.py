@@ -40,9 +40,7 @@ class Person:
         self.x = self.initial_x
         self.y = self.initial_y
 
-    def render(self, screen, block_size):
+    def render(self, screen):
         if not self.dead:
-            rect = self.board.get_render_rect(self.x, self.y, block_size)
-            center_x = rect.left + block_size / 2
-            center_y = rect.top + block_size / 2
-            pg.draw.circle(screen, colors.PINK, (center_x, center_y), block_size / 4)
+            rect = self.board.get_render_rect(self.x, self.y)
+            pg.draw.circle(screen, colors.PINK, rect.center, rect.width / 4)

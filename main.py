@@ -7,11 +7,9 @@ import colors
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 750, 500
 
-BLOCK_SIZE = 50 # this belongs in board, main shouldn't know/care about this
-
 def render(screen, board):
     screen.fill(colors.BLACK)
-    board.render(screen, BLOCK_SIZE)
+    board.render(screen)
 
 def is_key_event(event, type, *args):
     return event.type == type and event.key in args
@@ -24,7 +22,7 @@ def main():
     #level = "scrolling_colorful"
     level = "big"
     board = reader.create_board_from_file("levels/" + level)
-    board.view_width = SCREEN_WIDTH / BLOCK_SIZE #TODO: this is weird
+    board.view_width = SCREEN_WIDTH / 50 #TODO: this is weird, remove it and instead provide rect for display area
     screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
     pg.display.set_caption('GyroMine')
 
@@ -44,7 +42,7 @@ def main():
         (left, middle, right) = pg.mouse.get_pressed()
         if left:
             (click_x, click_y) = pg.mouse.get_pos()
-            board.add_pipe_at(click_x, click_y, colors.RED, BLOCK_SIZE)
+            board.add_pipe_at(click_x, click_y, colors.RED)
 
 
         if time % 3 == 0:

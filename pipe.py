@@ -52,32 +52,32 @@ class Pipe:
             self.board.swap_blocks(self.x, self.top_y, self.x, self.bottom_y)
             self.top_y -= 1
 
-    def render(self, screen, block_size):
-        self._render_top_cap(screen, block_size)
-        self._render_bottom_cap(screen, block_size)
-        self._render_anchor(screen, block_size)
+    def render(self, screen):
+        self._render_top_cap(screen)
+        self._render_bottom_cap(screen)
+        self._render_anchor(screen)
 
     def _set_cap_left_width(self, rect):
         new_width = rect.width * Pipe.PIPE_CAP_WIDTH_PERCENTAGE
         rect.left += (rect.width - new_width) / 2
         rect.width = new_width
 
-    def _render_top_cap(self, screen, block_size):
-        top_rect = self.board.get_render_rect(self.x, self.top_y, block_size)
+    def _render_top_cap(self, screen):
+        top_rect = self.board.get_render_rect(self.x, self.top_y)
         top_rect.height *= Pipe.PIPE_CAP_HEIGHT_PERCENTAGE
         self._set_cap_left_width(top_rect)
         pg.draw.rect(screen, self.color, top_rect)
 
-    def _render_bottom_cap(self, screen, block_size):
-        bottom_rect = self.board.get_render_rect(self.x, self.bottom_y, block_size)
+    def _render_bottom_cap(self, screen):
+        bottom_rect = self.board.get_render_rect(self.x, self.bottom_y)
         new_height = bottom_rect.height * Pipe.PIPE_CAP_HEIGHT_PERCENTAGE
         bottom_rect.top += (bottom_rect.height - new_height) + 1
         bottom_rect.height = new_height
         self._set_cap_left_width(bottom_rect)
         pg.draw.rect(screen, self.color, bottom_rect)
 
-    def _render_anchor(self, screen, block_size):
-        anchor_rect = self.board.get_render_rect(self.x, self.anchor_y, block_size)
+    def _render_anchor(self, screen):
+        anchor_rect = self.board.get_render_rect(self.x, self.anchor_y)
         block_height = anchor_rect.height
         block_width = anchor_rect.width
 

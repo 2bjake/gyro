@@ -6,11 +6,13 @@ from collections import defaultdict
 from pipe import Pipe
 
 class Board:
-    BLOCK_SIZE = 50
+    DEFAULT_BLOCK_SIZE = 50
 
     def __init__(self, block_matrix, person_x, person_y):
         self.width = len(block_matrix)
         self.height = len(block_matrix[0])
+
+        self.block_size = Board.DEFAULT_BLOCK_SIZE
 
         self.view_x = 0
         self.view_width = self.width
@@ -52,31 +54,32 @@ class Board:
         elif self.person.x < self.view_x + self.view_width / 3:
             self.view_x = self.person.x - 3
 
-    def get_render_rect(self, x, y, block_size):
-        return pg.Rect((block_size * (x - self.view_x), block_size * (self.height - y - 1)), (block_size, block_size))
+    def get_render_rect(self, x, y):
+        return pg.Rect((self.block_size * (x - self.view_x), self.block_size * (self.height - y - 1)), (self.block_size, self.block_size))
 
-    def add_pipe_at(self, click_x, click_y, color, block_size):
-        x = click_x / block_size + self.view_x
-        y = self.height - click_y / block_size - 1
+    def add_pipe_at(self, click_x, click_y, color):
+        #TODO: this is display x,y -> grid x,y code. make is more generally usable
+        x = click_x / self.block_size + self.view_x
+        y = self.height - click_y / self.block_size - 1
         self._set_block(x, y, PipeBlock(color))
         self._create_pipes()
 
     #TODO: this is rendering elements that are out of the view_port
-    def render(self, screen, block_size):
+    def render(self, screen):
         #render all blocks
         for x in range(self.width):
             for y in range(self.height):
-                self._render_block(screen, x, y, block_size)
+                self._render_block(screen, x, y)
 
-        self.person.render(screen, block_size)
+        self.person.render(screen)
 
         #render pipe details
         for key in self.pipes:
             for pipe in self.pipes[key]:
-                pipe.render(screen, block_size)
+                pipe.render(screen)
 
-    def _render_block(self, screen, block_x, block_y, block_size):
-        rect = self.get_render_rect(block_x, block_y, block_size)
+    def _render_block(self, screen, block_x, block_y):
+        rect = self.get_render_rect(block_x, block_y)
         self.get_block(block_x, block_y).render(screen, rect)
 
     def _set_block(self, x, y, block):
