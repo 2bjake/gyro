@@ -30,7 +30,7 @@ class Pipe:
             cur_y = self.bottom_y - i
             cur_block = self.board.get_block(self.x, cur_y)
             if not isinstance(cur_block, EmptyBlock):
-                return self.bottom_y - i + 1
+                return cur_y + 1
 
         return self.bottom_y - length + 1
 
@@ -67,13 +67,13 @@ class Pipe:
         rect.width = new_width
 
     def _render_top_cap(self, screen, block_size):
-        top_rect = pg.Rect(self.board.get_render_rect(self.x, self.top_y, block_size))
+        top_rect = self.board.get_render_rect(self.x, self.top_y, block_size)
         top_rect.height *= Pipe.PIPE_CAP_HEIGHT_PERCENTAGE
         self._set_cap_left_width(top_rect)
         pg.draw.rect(screen, self.color, top_rect)
 
     def _render_bottom_cap(self, screen, block_size):
-        bottom_rect = pg.Rect(self.board.get_render_rect(self.x, self.bottom_y, block_size))
+        bottom_rect = self.board.get_render_rect(self.x, self.bottom_y, block_size)
         new_height = bottom_rect.height * Pipe.PIPE_CAP_HEIGHT_PERCENTAGE
         bottom_rect.top += (bottom_rect.height - new_height) + 1
         bottom_rect.height = new_height
@@ -81,7 +81,7 @@ class Pipe:
         pg.draw.rect(screen, self.color, bottom_rect)
 
     def _render_anchor(self, screen, block_size):
-        anchor_rect = pg.Rect(self.board.get_render_rect(self.x, self.anchor_y, block_size))
+        anchor_rect = self.board.get_render_rect(self.x, self.anchor_y, block_size)
         block_height = anchor_rect.height
         block_width = anchor_rect.width
 
