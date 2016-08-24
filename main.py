@@ -20,52 +20,56 @@ def main():
     pg.init()
     clock = pg.time.Clock()
 
-    level = "rope"
+    #level = "rope"
+    level = "scrolling_colorful"
     board = reader.create_board_from_file("levels/" + level)
     board.set_view_width(SCREEN_WIDTH / BLOCK_SIZE)
     screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
     pg.display.set_caption('Gyro')
 
+    time = 0
+
     while True:
         clock.tick(60)
+        time += 1
         for event in pg.event.get():
             if event.type == QUIT:
                 pg.quit()
                 sys.exit()
 
-        keys = pg.key.get_pressed()
-        if keys[pg.K_LEFT]:
-            board.person.move_left()
-        elif keys[pg.K_RIGHT]:
-            board.person.move_right()
-        elif keys[pg.K_UP]:
-            board.person.move_up()
-        elif keys[pg.K_DOWN]:
-            board.person.move_down()
+        if time % 3 == 0:
+            keys = pg.key.get_pressed()
+            if keys[pg.K_LEFT]:
+                board.person.move_left()
+            elif keys[pg.K_RIGHT]:
+                board.person.move_right()
+            elif keys[pg.K_UP]:
+                board.person.move_up()
+            elif keys[pg.K_DOWN]:
+                board.person.move_down()
 
-        if keys[pg.K_a] or keys[pg.K_b]:
-            board.move_pipes_down(colors.BLUE)
-        else:
-            board.move_pipes_up(colors.BLUE)
+            if keys[pg.K_a] or keys[pg.K_b]:
+                board.move_pipes_down(colors.BLUE)
+            else:
+                board.move_pipes_up(colors.BLUE)
 
-        if keys[pg.K_s] or keys[pg.K_r]:
-            board.move_pipes_down(colors.RED)
-        else:
-            board.move_pipes_up(colors.RED)
+            if keys[pg.K_s] or keys[pg.K_r]:
+                board.move_pipes_down(colors.RED)
+            else:
+                board.move_pipes_up(colors.RED)
 
-        if keys[pg.K_y]:
-            board.move_pipes_down(colors.YELLOW)
-        else:
-            board.move_pipes_up(colors.YELLOW)
+            if keys[pg.K_y]:
+                board.move_pipes_down(colors.YELLOW)
+            else:
+                board.move_pipes_up(colors.YELLOW)
 
-        if keys[pg.K_g]:
-            board.move_pipes_down(colors.GREEN)
-        else:
-            board.move_pipes_up(colors.GREEN)
+            if keys[pg.K_g]:
+                board.move_pipes_down(colors.GREEN)
+            else:
+                board.move_pipes_up(colors.GREEN)
 
-
-        board.resolve_collisions()
-        board.adjust_view_port()
+            board.resolve_collisions()
+            board.adjust_view_port()
 
         render(screen, board)
         pg.display.update()
