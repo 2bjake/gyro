@@ -20,7 +20,8 @@ def main():
     pg.init()
     clock = pg.time.Clock()
 
-    board = reader.create_board_from_file("pseudo/lvl")
+    level = "rope"
+    board = reader.create_board_from_file("levels/" + level)
     board.set_view_width(SCREEN_WIDTH / BLOCK_SIZE)
     screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
     pg.display.set_caption('Gyro')
@@ -37,6 +38,10 @@ def main():
             board.person.move_left()
         elif keys[pg.K_RIGHT]:
             board.person.move_right()
+        elif keys[pg.K_UP]:
+            board.person.move_up()
+        elif keys[pg.K_DOWN]:
+            board.person.move_down()
 
         if keys[pg.K_a] or keys[pg.K_b]:
             board.move_pipes_down(colors.BLUE)

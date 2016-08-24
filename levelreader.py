@@ -19,6 +19,8 @@ def create_board_from_file(file_name):
 
                 if c == '.':
                     b = EmptyBlock()
+                elif c == '|':
+                    b = RopeBlock()
                 elif c == 'I':
                     b = GroundBlock()
                 elif c == 'B':

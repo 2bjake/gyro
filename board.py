@@ -32,12 +32,12 @@ class Board:
     def resolve_collisions(self):
         block_at_person = self.get_block(self.person.x, self.person.y)
         block_below_person = self.get_block(self.person.x, self.person.y - 1)
-        if not isinstance(block_at_person, EmptyBlock):
+        if not isinstance(block_at_person, EmptyBlock) and not isinstance(block_at_person, RopeBlock):
             if self.person.can_move(self.person.x, self.person.y + 1):
                 self.person.move_up()
             else:
                 self.person.kill()
-        elif isinstance(block_below_person, EmptyBlock):
+        elif isinstance(block_below_person, EmptyBlock) and not isinstance(block_at_person, RopeBlock):
             self.person.move_down()
 
     def adjust_view_port(self):

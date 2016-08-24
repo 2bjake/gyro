@@ -62,3 +62,16 @@ class PipeBlock(Block):
         pipe_rect.left += (pipe_rect.width - new_width) / 2
         pipe_rect.width = new_width
         pg.draw.rect(screen, self.color, pipe_rect)
+
+class RopeBlock(Block):
+    WIDTH = 3
+
+    def __init__(self):
+        self.color = colors.BROWN
+
+    def render(self, screen, rect):
+        rect = pg.Rect(rect)
+        mid = rect.left + rect.width / 2
+        start_pos = (mid, rect.top)
+        end_pos = (mid, rect.bottom)
+        pg.draw.line(screen, self.color, start_pos, end_pos, RopeBlock.WIDTH)

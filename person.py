@@ -10,7 +10,8 @@ class Person:
 		self.dead = False
 
 	def can_move(self, new_x, new_y):
-		return isinstance(self.board.get_block(new_x, new_y), blocks.EmptyBlock)
+		dest_block = self.board.get_block(new_x, new_y)
+		return isinstance(dest_block, blocks.EmptyBlock) or isinstance(dest_block, blocks.RopeBlock)
 
 	def move_left(self):
 		new_x = self.x - 1
