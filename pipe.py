@@ -42,18 +42,14 @@ class Pipe:
 
     def move_up(self):
         if self.can_move_up():
-            new_top_block = self.board.get_block(self.x, self.bottom_y)
             self.top_y += 1
-            self.board.set_block(self.x, self.top_y, new_top_block)
-            self.board.set_block(self.x, self.bottom_y, EmptyBlock())
+            self.board.swap_blocks(self.x, self.top_y, self.x, self.bottom_y)
             self.bottom_y += 1
 
     def move_down(self):
         if self.can_move_down():
-            new_bottom_block = self.board.get_block(self.x, self.top_y)
             self.bottom_y -= 1
-            self.board.set_block(self.x, self.bottom_y, new_bottom_block)
-            self.board.set_block(self.x, self.top_y, EmptyBlock())
+            self.board.swap_blocks(self.x, self.top_y, self.x, self.bottom_y)
             self.top_y -= 1
 
     def render(self, screen, block_size):

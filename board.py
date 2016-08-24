@@ -6,6 +6,8 @@ from collections import defaultdict
 from pipe import Pipe
 
 class Board:
+    BLOCK_SIZE = 50
+
     def __init__(self, block_matrix, person_x, person_y):
         self.width = len(block_matrix)
         self.height = len(block_matrix[0])
@@ -53,6 +55,12 @@ class Board:
     def get_render_rect(self, x, y, block_size):
         return pg.Rect((block_size * (x - self.view_x), block_size * (self.height - y - 1)), (block_size, block_size))
 
+    def add_pipe_at(self, click_x, click_y, color, block_size):
+        x = click_x / block_size + self.view_x
+        y = self.height - click_y / block_size - 1
+        self._set_block(x, y, PipeBlock(color))
+        self._create_pipes()
+
     #TODO: this is rendering elements that are out of the view_port
     def render(self, screen, block_size):
         #render all blocks
@@ -71,8 +79,13 @@ class Board:
         rect = self.get_render_rect(block_x, block_y, block_size)
         self.get_block(block_x, block_y).render(screen, rect)
 
-    def set_block(self, x, y, block):
+    def _set_block(self, x, y, block):
         self.block_matrix[x][y] = block
+
+    def swap_blocks(self, a_x, a_y, b_x, b_y):
+        temp = self.get_block(a_x, a_y)
+        self._set_block(a_x, a_y, self.get_block(b_x, b_y))
+        self._set_block(b_x, b_y, temp)
 
     def get_block(self, x, y):
         return self.block_matrix[x][y]
@@ -85,16 +98,18 @@ class Board:
             while y < self.height:
                 block = self.get_block(x, y)
                 if isinstance(block, PipeBlock):
-                    (pipe, y) = self._create_pipe(x, y)
+                    (pipe, y) = self._create_pipe(x, y, block.color)
                     self.pipes[block.color].append(pipe)
                 y += 1
             x += 1
             y = 0
 
-    def _create_pipe(self, bottom_x, bottom_y):
+    def _create_pipe(self, bottom_x, bottom_y, color):
         cur_y = bottom_y
-        while isinstance(self.get_block(bottom_x, cur_y), PipeBlock): #BUG: when red pipe touches blue pipe
+        cur_block = self.get_block(bottom_x, cur_y)
+        while isinstance(cur_block, PipeBlock) and cur_block.color == color:
             cur_y += 1
+            cur_block = self.get_block(bottom_x, cur_y)
         top_y = cur_y - 1
 
         return (Pipe(self, bottom_x, top_y, bottom_y), top_y)
