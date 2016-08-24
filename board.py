@@ -9,10 +9,17 @@ class Board:
     def __init__(self, block_matrix, person_x, person_y):
         self.width = len(block_matrix)
         self.height = len(block_matrix[0])
+
+        self.view_x = 0
+        self.view_width = self.width
+
         self.block_matrix = block_matrix
         self._create_pipes()
         self.person = Person(self, person_x, person_y)
         print self.pipes #remove me
+
+    def set_view_width(self, view_width):
+        self.view_width = view_width
 
     def move_pipes_down(self, color):
         for pipe in self.pipes[color]:
@@ -33,8 +40,15 @@ class Board:
         elif isinstance(block_below_person, EmptyBlock):
             self.person.move_down()
 
+    def adjust_view_port(self):
+        end_x = self.view_x + self.view_width
+        if self.person.x > end_x - self.view_width / 3:
+            self.view_x = self.person.x + 3
+        elif self.person.x < self.view_x + self.view_width /3:
+            self.view_x = self.person.x - 3
+
     def get_render_rect(self, x, y, block_size):
-        return pg.Rect((block_size * x, block_size * (self.height - y - 1)), (block_size, block_size))
+        return pg.Rect((block_size * (x - self.view_x), block_size * (self.height - y - 1)), (block_size, block_size))
 
     def render(self, screen, block_size):
         #render all blocks
@@ -45,12 +59,9 @@ class Board:
         self.person.render(screen, block_size)
 
         #render pipe details
-        for pipe in self.pipes[colors.BLUE]:
-            pipe.render(screen, block_size)
-
-        for pipe in self.pipes[colors.RED]:
-            pipe.render(screen, block_size)
-
+        for key in self.pipes:
+            for pipe in self.pipes[key]:
+                pipe.render(screen, block_size)
 
     def _render_block(self, screen, block_x, block_y, block_size):
         rect = self.get_render_rect(block_x, block_y, block_size)

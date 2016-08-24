@@ -5,11 +5,12 @@ from board import Board
 import levelreader as reader
 import colors
 
-SCREEN_WIDTH, SCREEN_HEIGHT = 550, 500
+SCREEN_WIDTH, SCREEN_HEIGHT = 750, 500
 
 BLOCK_SIZE = 50
 
 def render(screen, board):
+    screen.fill(colors.BLACK)
     board.render(screen, BLOCK_SIZE)
 
 def is_key_event(event, type, *args):
@@ -20,6 +21,7 @@ def main():
     clock = pg.time.Clock()
 
     board = reader.create_board_from_file("pseudo/lvl")
+    board.set_view_width(SCREEN_WIDTH / BLOCK_SIZE)
     screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
     pg.display.set_caption('Gyro')
 
@@ -36,17 +38,29 @@ def main():
         elif keys[pg.K_RIGHT]:
             board.person.move_right()
 
-        if keys[pg.K_a]:
+        if keys[pg.K_a] or keys[pg.K_b]:
             board.move_pipes_down(colors.BLUE)
         else:
             board.move_pipes_up(colors.BLUE)
 
-        if keys[pg.K_s]:
+        if keys[pg.K_s] or keys[pg.K_r]:
             board.move_pipes_down(colors.RED)
         else:
             board.move_pipes_up(colors.RED)
 
+        if keys[pg.K_y]:
+            board.move_pipes_down(colors.YELLOW)
+        else:
+            board.move_pipes_up(colors.YELLOW)
+
+        if keys[pg.K_g]:
+            board.move_pipes_down(colors.GREEN)
+        else:
+            board.move_pipes_up(colors.GREEN)
+
+
         board.resolve_collisions()
+        board.adjust_view_port()
 
         render(screen, board)
         pg.display.update()

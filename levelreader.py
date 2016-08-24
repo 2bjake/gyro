@@ -17,7 +17,7 @@ def create_board_from_file(file_name):
                 c = line[x]
                 b = Block()
 
-                if c == ' ':
+                if c == '.':
                     b = EmptyBlock()
                 elif c == 'I':
                     b = GroundBlock()
@@ -25,6 +25,10 @@ def create_board_from_file(file_name):
                     b = PipeBlock(colors.BLUE)
                 elif c == 'R':
                     b = PipeBlock(colors.RED)
+                elif c == 'G':
+                    b = PipeBlock(colors.GREEN)
+                elif c == 'Y':
+                    b = PipeBlock(colors.YELLOW)
                 elif c == 'P':
                     b = EmptyBlock()
                     person_x, person_y = x, y
