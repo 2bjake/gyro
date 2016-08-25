@@ -13,22 +13,22 @@ class Person:
         dest_block = self.board.get_block(new_x, new_y)
         return not dest_block.is_solid
 
-    def move_left(self):
-        self.move(self.x - 1, self.y)
+    def move_left(self, force=False):
+        self.move(self.x - 1, self.y, force)
 
-    def move_right(self):
-        self.move(self.x + 1, self.y)
+    def move_right(self, force=False):
+        self.move(self.x + 1, self.y, force)
 
-    def move_up(self):
-        self.move(self.x, self.y + 1)
+    def move_up(self, force=False):
+        self.move(self.x, self.y + 1, force)
 
-    def move_down(self):
-        self.move(self.x, self.y - 1)
+    def move_down(self, force=False):
+        self.move(self.x, self.y - 1, force)
 
-    def move(self, new_x, new_y):
+    def move(self, new_x, new_y, force=False):
         if self.dead:
             self.reset()
-        elif self.can_move(new_x, new_y):
+        elif force or self.can_move(new_x, new_y):
             self.x, self.y = new_x, new_y
 
     def kill(self):
