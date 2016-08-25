@@ -18,21 +18,26 @@ def main():
     pg.init()
     clock = pg.time.Clock()
 
+    screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
+
+    pg.display.set_caption('GyroMine')
+    editor_width = 0
+    view_rect = pg.Rect(editor_width, 0, SCREEN_WIDTH - editor_width, SCREEN_HEIGHT)
+
     #level = "rope"
     #level = "scrolling_colorful"
     level = "big"
-    board = reader.create_board_from_file("levels/" + level)
-    board.view_width = SCREEN_WIDTH / 50 #TODO: this is weird, remove it and instead provide rect for display area
-    screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
-    pg.display.set_caption('GyroMine')
+    #level = "empty"
+    block_matrix, person_pos = reader.create_from_file("levels/" + level)
+    board = Board(view_rect, block_matrix, person_pos)
 
     time = 0
 
     while True:
         clock.tick(60)
-        time += 1
+
         for event in pg.event.get():
-            if event.type == QUIT:
+            if event.type == QUIT or is_key_event(event, KEYUP, K_q):
                 pg.quit()
                 sys.exit()
             if is_key_event(event, KEYUP, K_o):
@@ -45,7 +50,7 @@ def main():
             board.add_pipe_at(click_x, click_y, colors.RED)
 
 
-        if time % 3 == 0:
+        if time == 0 or time % 3 == 0:
             keys = pg.key.get_pressed()
             if keys[pg.K_LEFT]:
                 board.person.move_left()
@@ -66,5 +71,6 @@ def main():
 
         render(screen, board)
         pg.display.update()
+        time += 1
 
 if __name__ == '__main__': main()

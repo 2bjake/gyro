@@ -3,7 +3,7 @@ import pygame as pg
 import blocks
 
 class Person:
-    def __init__(self, board, x, y):
+    def __init__(self, board, (x, y)):
         self.board = board
         self.initial_x = x
         self.initial_y = y
@@ -29,8 +29,7 @@ class Person:
         if self.dead:
             self.reset()
         elif self.can_move(new_x, new_y):
-            self.x = new_x
-            self.y = new_y
+            self.x, self.y = new_x, new_y
 
     def kill(self):
         self.dead = True

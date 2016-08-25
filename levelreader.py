@@ -1,7 +1,6 @@
-from board import Board
 from blocks import *
 
-def create_board_from_file(file_name):
+def create_from_file(file_name):
     with open(file_name,'r') as f:
         lines = f.readlines()
         lines.reverse() # so that 0,0 is at the bottom
@@ -33,8 +32,8 @@ def create_board_from_file(file_name):
                     b = PipeBlock(colors.YELLOW)
                 elif c == 'P':
                     b = EmptyBlock()
-                    person_x, person_y = x, y
+                    person_pos = (x, y)
 
                 block_matrix[x][y] = b
 
-        return Board(block_matrix, person_x, person_y)
+        return block_matrix, person_pos

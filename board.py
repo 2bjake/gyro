@@ -8,18 +8,22 @@ from pipe import Pipe
 class Board:
     DEFAULT_BLOCK_SIZE = 50
 
-    def __init__(self, block_matrix, person_x, person_y):
+    def __init__(self, screen_rect, block_matrix, person_pos):
         self.width = len(block_matrix)
         self.height = len(block_matrix[0])
 
         self.block_size = Board.DEFAULT_BLOCK_SIZE
 
         self.view_x = 0
-        self.view_width = self.width
+        self.set_screen_rect(screen_rect)
 
         self.block_matrix = block_matrix
         self._create_pipes()
-        self.person = Person(self, person_x, person_y)
+        self.person = Person(self, person_pos)
+
+    def set_screen_rect(self, rect):
+        self.screen_rect = rect
+        self.view_width = self.screen_rect.width / self.block_size
 
     def move_pipes(self, color, down=True):
         if down:
@@ -50,24 +54,34 @@ class Board:
     def adjust_view_port(self):
         end_x = self.view_x + self.view_width
         if self.person.x > end_x - self.view_width / 3:
-            self.view_x = self.person.x + 3
+            self.view_x = max(0, self.person.x - 3)
         elif self.person.x < self.view_x + self.view_width / 3:
-            self.view_x = self.person.x - 3
+            self.view_x = max(0, self.person.x - 3)
 
     def get_render_rect(self, x, y):
-        return pg.Rect((self.block_size * (x - self.view_x), self.block_size * (self.height - y - 1)), (self.block_size, self.block_size))
+        screen_x, screen_y = self.matrix_coords_to_screen_coords(x, y)
+        return pg.Rect(screen_x, screen_y, self.block_size, self.block_size)
+
+    def matrix_coords_to_screen_coords(self, matrix_x, matrix_y):
+        x = self.screen_rect.x + self.block_size * (matrix_x - self.view_x)
+        y = self.screen_rect.top + self.block_size * (self.height - matrix_y - 1)
+        return x, y
+
+    def screen_coords_to_matrix_coords(self, screen_x, screen_y):
+        x = (screen_x - self.screen_rect.x)/ self.block_size + self.view_x
+        y = self.height - screen_y / self.block_size - 1 + self.screen_rect.y
+        return x, y
 
     def add_pipe_at(self, click_x, click_y, color):
-        #TODO: this is display x,y -> grid x,y code. make is more generally usable
-        x = click_x / self.block_size + self.view_x
-        y = self.height - click_y / self.block_size - 1
+        x, y = self.screen_coords_to_matrix_coords(click_x, click_y)
+
         self._set_block(x, y, PipeBlock(color))
         self._create_pipes()
 
-    #TODO: this is rendering elements that are out of the view_port
     def render(self, screen):
-        #render all blocks
-        for x in range(self.width):
+        #render all blocks in view_port
+        max_x = min(self.width, self.view_width + self.view_x)
+        for x in range(self.view_x, max_x):
             for y in range(self.height):
                 self._render_block(screen, x, y)
 
@@ -76,7 +90,8 @@ class Board:
         #render pipe details
         for key in self.pipes:
             for pipe in self.pipes[key]:
-                pipe.render(screen)
+                if self.view_x <= pipe.x < max_x:
+                    pipe.render(screen)
 
     def _render_block(self, screen, block_x, block_y):
         rect = self.get_render_rect(block_x, block_y)
@@ -107,7 +122,7 @@ class Board:
             x += 1
             y = 0
 
-    def _create_pipe(self, bottom_x, bottom_y, color):
+    def _create_pipe(self, bottom_x, bottom_y, color): #BUG: if pipe is at top, this walks off the end
         cur_y = bottom_y
         cur_block = self.get_block(bottom_x, cur_y)
         while isinstance(cur_block, PipeBlock) and cur_block.color == color:
