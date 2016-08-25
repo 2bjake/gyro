@@ -19,7 +19,7 @@ class Board:
 
         self.block_matrix = block_matrix
         self._create_pipes()
-        self.person = Person(self, person_pos)
+        self.person = Person(self, person_pos) #TODO: move person from Board to Game
 
     def set_screen_rect(self, rect):
         self.screen_rect = rect

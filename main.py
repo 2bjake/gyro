@@ -6,94 +6,104 @@ from editorpanel import EditorPanel
 import levelreader as reader
 import colors
 
-SCREEN_WIDTH, SCREEN_HEIGHT = 750, 500
-
-EDITOR_WIDTH = 100
-
-def render(screen, board, editor=None):
-    screen.fill(colors.BLACK)
-    board.render(screen)
-    if editor:
-        editor.render(screen)
-
 def is_key_event(event, type, *args):
     return event.type == type and event.key in args
 
-def toggle_editor(editor_mode, board):
-    editor_mode = not editor_mode
+class Game:
+    SCREEN_WIDTH, SCREEN_HEIGHT = 750, 500
 
-    if editor_mode:
-        board.set_screen_rect(pg.Rect(EDITOR_WIDTH, 0, SCREEN_WIDTH - EDITOR_WIDTH, SCREEN_HEIGHT))
-    else:
-        board.set_screen_rect(pg.Rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT))
+    EDITOR_WIDTH = 100
 
-    return editor_mode
+    #LEVEL = "rope"
+    #LEVEL = "scrolling_colorful"
+    LEVEL = "big"
+    #LEVEL = "empty"
+
+    def __init__(self):
+        pg.init()
+        self.clock = pg.time.Clock()
+
+        self.screen = pg.display.set_mode((Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT), 0, 32)
+
+        pg.display.set_caption('GyroMine')
+
+        self.board_screen_rect = pg.Rect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT)
+
+        block_matrix, person_pos = reader.create_from_file("levels/" + Game.LEVEL)
+        self.board = Board(self.board_screen_rect, block_matrix, person_pos)
+
+        self.editor_mode = False
+        self.editor_screen_rect = pg.Rect(0, 0, Game.EDITOR_WIDTH, Game.SCREEN_HEIGHT)
+        self.editor = EditorPanel(self.editor_screen_rect)
+
+    def render(self):
+        self.screen.fill(colors.BLACK)
+        self.board.render(self.screen)
+        if self.editor_mode:
+            self.editor.render(self.screen)
+
+    def toggle_editor(self):
+        self.editor_mode = not self.editor_mode
+
+        #TODO: make these rects contants?
+        if self.editor_mode:
+            self.board_screen_rect = pg.Rect(Game.EDITOR_WIDTH, 0, Game.SCREEN_WIDTH - Game.EDITOR_WIDTH, Game.SCREEN_HEIGHT)
+        else:
+            self.board_screen_rect = pg.Rect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT)
+
+        self.board.set_screen_rect(self.board_screen_rect)
+
+    def run(self):
+        time = 0
+
+        while True:
+            self.clock.tick(60)
+
+            # handle keystroke events
+            for event in pg.event.get():
+                if event.type == QUIT or is_key_event(event, KEYUP, K_q):
+                    pg.quit()
+                    sys.exit()
+                if is_key_event(event, KEYUP, K_o):
+                    self.board.person.reset()
+                if is_key_event(event, KEYUP, K_e):
+                    self.toggle_editor()
+
+            # handle mouse events
+            if self.editor_mode:
+                (left, middle, right) = pg.mouse.get_pressed()
+                if left:
+                    (click_x, click_y) = pg.mouse.get_pos()
+                    self.board.add_pipe_at(click_x, click_y, colors.RED)
+
+            # handle held down key events
+            if time == 0 or time % 3 == 0:
+                keys = pg.key.get_pressed()
+                # person movement
+                if keys[pg.K_LEFT]:
+                    self.board.person.move_left(self.editor_mode)
+                elif keys[pg.K_RIGHT]:
+                    self.board.person.move_right(self.editor_mode)
+                elif keys[pg.K_UP]:
+                    self.board.person.move_up(self.editor_mode)
+                elif keys[pg.K_DOWN]:
+                    self.board.person.move_down(self.editor_mode)
+
+                # pipe movement
+                if not self.editor_mode:
+                    self.board.move_pipes(colors.BLUE, keys[pg.K_a] or keys[pg.K_b])
+                    self.board.move_pipes(colors.RED, keys[pg.K_s] or keys[pg.K_r])
+                    self.board.move_pipes(colors.YELLOW, keys[pg.K_y])
+                    self.board.move_pipes(colors.GREEN, keys[pg.K_g])
+                    self.board.resolve_collisions()
+
+                self.board.adjust_view_port()
+
+            self.render()
+            pg.display.update()
+            time += 1
 
 def main():
-    pg.init()
-    clock = pg.time.Clock()
-
-    screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
-
-    pg.display.set_caption('GyroMine')
-
-    screen_rect = pg.Rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
-
-    #level = "rope"
-    #level = "scrolling_colorful"
-    level = "big"
-    #level = "empty"
-    block_matrix, person_pos = reader.create_from_file("levels/" + level)
-    board = Board(screen_rect, block_matrix, person_pos)
-
-    editor_mode = False
-    editor = EditorPanel(pg.Rect(0, 0, EDITOR_WIDTH, SCREEN_HEIGHT))
-
-    time = 0
-
-    while True:
-        clock.tick(60)
-
-        for event in pg.event.get():
-            if event.type == QUIT or is_key_event(event, KEYUP, K_q):
-                pg.quit()
-                sys.exit()
-            if is_key_event(event, KEYUP, K_o):
-                board.person.reset()
-            if is_key_event(event, KEYUP, K_e):
-                editor_mode = toggle_editor(editor_mode, board)
-
-        if editor_mode:
-            (left, middle, right) = pg.mouse.get_pressed()
-            if left:
-                (click_x, click_y) = pg.mouse.get_pos()
-                board.add_pipe_at(click_x, click_y, colors.RED)
-
-        if time == 0 or time % 3 == 0:
-            keys = pg.key.get_pressed()
-            if keys[pg.K_LEFT]:
-                board.person.move_left(editor_mode)
-            elif keys[pg.K_RIGHT]:
-                board.person.move_right(editor_mode)
-            elif keys[pg.K_UP]:
-                board.person.move_up(editor_mode)
-            elif keys[pg.K_DOWN]:
-                board.person.move_down(editor_mode)
-
-            if not editor_mode:
-                board.move_pipes(colors.BLUE, keys[pg.K_a] or keys[pg.K_b])
-                board.move_pipes(colors.RED, keys[pg.K_s] or keys[pg.K_r])
-                board.move_pipes(colors.YELLOW, keys[pg.K_y])
-                board.move_pipes(colors.GREEN, keys[pg.K_g])
-                board.resolve_collisions()
-
-            board.adjust_view_port()
-
-        if editor_mode:
-            render(screen, board, editor)
-        else:
-            render(screen, board)
-        pg.display.update()
-        time += 1
+    Game().run()
 
 if __name__ == '__main__': main()
