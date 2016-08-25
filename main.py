@@ -104,8 +104,7 @@ class Game:
                     self.board.move_pipes(colors.GREEN, keys[pg.K_g])
                     self.board.resolve_collisions()
 
-                self.board.adjust_view_port()
-
+            self.board.adjust_view_port()
             self.render()
             pg.display.update()
             time += 1
