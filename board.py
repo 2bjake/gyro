@@ -72,10 +72,10 @@ class Board:
         y = self.height - screen_y / self.block_size - 1 + self.screen_rect.y
         return x, y
 
-    def add_pipe_at(self, click_x, click_y, color):
+    def add_block_at(self, click_x, click_y, block):
         x, y = self.screen_coords_to_matrix_coords(click_x, click_y)
 
-        self._set_block(x, y, PipeBlock(color))
+        self._set_block(x, y, block)
         self._create_pipes()
 
     def render(self, screen):

@@ -53,6 +53,14 @@ class Game:
 
         self.board.set_screen_rect(self.board_screen_rect)
 
+    def handle_edit_click(self, click_pos):
+        if self.board_screen_rect.collidepoint(click_pos):
+            (click_x, click_y) = pg.mouse.get_pos()
+            block = self.editor.get_selected_block()
+            self.board.add_block_at(click_x, click_y, block)
+        elif self.editor_screen_rect.collidepoint(click_pos):
+            self.editor.handle_click(click_pos)
+
     def run(self):
         time = 0
 
@@ -66,15 +74,14 @@ class Game:
                     sys.exit()
                 if is_key_event(event, KEYUP, K_o):
                     self.board.person.reset()
-                if is_key_event(event, KEYUP, K_e):
+                if is_key_event(event, KEYUP, K_p):
                     self.toggle_editor()
 
             # handle mouse events
             if self.editor_mode:
                 (left, middle, right) = pg.mouse.get_pressed()
                 if left:
-                    (click_x, click_y) = pg.mouse.get_pos()
-                    self.board.add_pipe_at(click_x, click_y, colors.RED)
+                    self.handle_edit_click(pg.mouse.get_pos())
 
             # handle held down key events
             if time == 0 or time % 3 == 0:
