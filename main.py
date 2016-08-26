@@ -3,7 +3,7 @@ import pygame as pg
 from pygame.locals import *
 from board import Board
 from editorpanel import EditorPanel
-import levelreader as reader
+import levelfile
 import colors
 
 def is_key_event(event, type, *args):
@@ -29,7 +29,7 @@ class Game:
 
         self.board_screen_rect = pg.Rect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT)
 
-        block_matrix, person_pos = reader.create_from_file("levels/" + Game.LEVEL)
+        block_matrix, person_pos = levelfile.create_from_file("levels/" + Game.LEVEL)
         self.board = Board(self.board_screen_rect, block_matrix, person_pos)
 
         self.editor_mode = False
@@ -76,6 +76,9 @@ class Game:
                     self.board.person.reset()
                 if is_key_event(event, KEYUP, K_p):
                     self.toggle_editor()
+                if is_key_event(event, KEYUP, K_x):
+                    p = self.board.person
+                    levelfile.write_to_file(self.board.block_matrix, p.x, p.y)
 
             # handle mouse events
             if self.editor_mode:
