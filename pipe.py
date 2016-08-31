@@ -1,6 +1,33 @@
 from blocks import PipeBlock, EmptyBlock
 import pygame as pg
 import colors
+from collections import defaultdict
+
+
+def create_pipes(board):
+    pipes = defaultdict(list)
+
+    x, y = 0, 0
+    while x < board.matrix_rect.width:
+        while y < board.matrix_rect.height:
+            block = board.get_block(x, y)
+            if isinstance(block, PipeBlock):
+                pipe, y = create_pipe(board, x, y, block.color)
+                pipes[block.color].append(pipe)
+            y += 1
+        x += 1
+        y = 0
+    return pipes
+
+def create_pipe(board, bottom_x, bottom_y, color):
+    cur_y = bottom_y
+    cur_block = board.get_block(bottom_x, cur_y)
+    while isinstance(cur_block, PipeBlock) and cur_block.color == color:
+        cur_y += 1
+        cur_block = board.get_block(bottom_x, cur_y)
+    top_y = cur_y - 1
+
+    return Pipe(board, bottom_x, top_y, bottom_y), top_y
 
 class Pipe:
 
@@ -39,6 +66,12 @@ class Pipe:
 
     def can_move_up(self):
         return self.top_y < self.max_top_y
+
+    def move(self, down=True):
+        if down:
+            self.move_down()
+        else:
+            self.move_up()
 
     def move_up(self):
         if self.can_move_up():

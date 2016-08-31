@@ -3,10 +3,10 @@ import pygame as pg
 import blocks
 
 class Person:
-    def __init__(self, board, (x, y)):
+    def __init__(self, board, (start_x, start_y)):
         self.board = board
-        self.initial_x = x
-        self.initial_y = y
+        self.start_x = start_x
+        self.start_y = start_y
         self.reset()
 
     def can_move(self, new_x, new_y):
@@ -28,7 +28,7 @@ class Person:
     def move(self, new_x, new_y, force=False):
         if self.dead:
             self.reset()
-        elif force or self.can_move(new_x, new_y):
+        elif self.can_move(new_x, new_y) or (force and self.board.is_inside_border(new_x, new_y)):
             self.x, self.y = new_x, new_y
 
     def kill(self):
@@ -36,8 +36,8 @@ class Person:
 
     def reset(self):
         self.dead = False
-        self.x = self.initial_x
-        self.y = self.initial_y
+        self.x = self.start_x
+        self.y = self.start_y
 
     def render(self, screen):
         if not self.dead:
