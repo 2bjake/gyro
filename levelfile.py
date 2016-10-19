@@ -35,32 +35,62 @@ def create_from_file(file_name):
                 elif c == 'P':
                     b = EmptyBlock()
                     person_pos = (x, y)
+                elif c == 'p':
+                    b = RopeBlock()
+                    person_pos = (x, y)
                 elif c == 'S':
                     b = EmptyBlock()
+                    smick_pos_list.append((x, y))
+                elif c == 's':
+                    b = RopeBlock()
                     smick_pos_list.append((x, y))
 
                 block_matrix[x][y] = b
 
         return block_matrix, person_pos, smick_pos_list
 
-def write_to_file(block_matrix, person_x, person_y):
+def get_smick_at(x, y, smicks):
+    for smick in smicks:
+        if x == smick.x and y == smick.y:
+            return smick
+    return None
+
+def write_to_file(block_matrix, person, smicks):
     width = len(block_matrix)
     height = len(block_matrix[0])
+    smicks = list(smicks)
 
     lines = []
 
     for y in range(height):
         line = ""
         for x in range(width):
+            at_person = x == person.x and y == person.y
+            at_smick = False
+            smick = get_smick_at(x, y, smicks)
+            if smick is not None:
+                at_smick = True
+                smicks.remove(smick)
+
             block = block_matrix[x][y]
             c = '?'
 
-            if x == person_x and y == person_y:
-                c = 'P'
-            elif isinstance(block, EmptyBlock):
-                c = '.'
+#            if x == person.x and y == person.y:
+#                c = 'P'
+            if isinstance(block, EmptyBlock):
+                if at_person:
+                    c = 'P'
+                elif at_smick:
+                    c = 'S'
+                else:
+                    c = '.'
             elif isinstance(block, RopeBlock):
-                c = '|'
+                if at_person:
+                    c = 'p'
+                elif at_smick:
+                    c = 's'
+                else:
+                    c = '|'
             elif isinstance(block, GroundBlock):
                 c = 'I'
             elif isinstance(block, PipeBlock) and block.color == colors.BLUE:

@@ -105,14 +105,17 @@ class Game:
             if event.type == QUIT or is_key_event(event, KEYUP, K_q):
                 pg.quit()
                 sys.exit()
-            if is_key_event(event, KEYUP, K_o):
+            if is_key_event(event, KEYUP, K_o): # reset
                 self.person.reset()
                 self.reset_smicks()
-            if is_key_event(event, KEYUP, K_p):
+            if is_key_event(event, KEYUP, K_p): # toggle editor
                 self.toggle_editor()
-            if is_key_event(event, KEYUP, K_x):
-                p = self.person
-                levelfile.write_to_file(self.board.block_matrix, p.x, p.y)
+            if is_key_event(event, KEYUP, K_x): # save level
+                levelfile.write_to_file(self.board.block_matrix, self.person, self.live_smicks)
+            if self.editor_mode and is_key_event(event, KEYUP, K_s):
+                new_smick = Smick(self.board, (self.person.x, self.person.y))
+                self.live_smicks.append(new_smick)
+                self.all_smicks.append(new_smick)
 
     def move_pipes(self, color, down):
         for pipe in self.pipes[color]:
