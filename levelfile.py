@@ -49,34 +49,20 @@ def create_from_file(file_name):
 
         return block_matrix, person_pos, smick_pos_list
 
-def get_smick_at(x, y, smicks):
-    for smick in smicks:
-        if x == smick.x and y == smick.y:
-            return smick
-    return None
-
-def write_to_file(block_matrix, person, smicks):
+def write_to_file(block_matrix, person, all_smicks):
     width = len(block_matrix)
     height = len(block_matrix[0])
-    smicks = list(smicks)
-
     lines = []
 
     for y in range(height):
         line = ""
         for x in range(width):
-            at_person = x == person.x and y == person.y
-            at_smick = False
-            smick = get_smick_at(x, y, smicks)
-            if smick is not None:
-                at_smick = True
-                smicks.remove(smick)
+            at_person = x == person.start_x and y == person.start_y
+            at_smick = (x, y) in all_smicks
 
             block = block_matrix[x][y]
             c = '?'
 
-#            if x == person.x and y == person.y:
-#                c = 'P'
             if isinstance(block, EmptyBlock):
                 if at_person:
                     c = 'P'

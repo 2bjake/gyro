@@ -37,10 +37,10 @@ class Game:
         self.pipes = pipe.create_pipes(self.board)
         self.person = Person(self.board, person_pos)
 
-        self.all_smicks = []
+        self.all_smicks = {}
         for smick_pos in smick_pos_list:
-            self.all_smicks.append(Smick(self.board, smick_pos))
-        self.live_smicks = list(self.all_smicks)
+            self.all_smicks[smick_pos] = Smick(self.board, smick_pos)
+        self.live_smicks = list(self.all_smicks.values())
 
         self.editor_mode = False
         self.editor_screen_rect = pg.Rect(0, 0, Game.EDITOR_WIDTH, Game.SCREEN_HEIGHT)
@@ -75,9 +75,12 @@ class Game:
         #TODO: make these rects contants?
         if self.editor_mode:
             self.board_screen_rect = pg.Rect(Game.EDITOR_WIDTH, 0, Game.SCREEN_WIDTH - Game.EDITOR_WIDTH, Game.SCREEN_HEIGHT)
+            self.reset_game()
         else:
             self.board_screen_rect = pg.Rect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT)
             #TODO: move the person to somewhere safe
+            self.person.start_x = self.person.x
+            self.person.start_y = self.person.y
 
         self.board.set_screen_rect(self.board_screen_rect)
 
@@ -106,16 +109,13 @@ class Game:
                 pg.quit()
                 sys.exit()
             if is_key_event(event, KEYUP, K_o): # reset
-                self.person.reset()
-                self.reset_smicks()
+                self.reset_game()
             if is_key_event(event, KEYUP, K_p): # toggle editor
                 self.toggle_editor()
             if is_key_event(event, KEYUP, K_x): # save level
-                levelfile.write_to_file(self.board.block_matrix, self.person, self.live_smicks)
-            if self.editor_mode and is_key_event(event, KEYUP, K_s):
-                new_smick = Smick(self.board, (self.person.x, self.person.y))
-                self.live_smicks.append(new_smick)
-                self.all_smicks.append(new_smick)
+                levelfile.write_to_file(self.board.block_matrix, self.person, self.all_smicks)
+            if is_key_event(event, KEYUP, K_s) and self.editor_mode: # toggle smick (only in editor mode)
+                self.toggle_smick((self.person.x, self.person.y))
 
     def move_pipes(self, color, down):
         for pipe in self.pipes[color]:
@@ -133,8 +133,21 @@ class Game:
         elif not block_below_character.is_solid and not isinstance(block_at_character, RopeBlock):
             character.move_down()
 
+    def toggle_smick(self, pos):
+        existing_smick = self.all_smicks.pop(pos, None)
+        if existing_smick == None:
+            new_smick = Smick(self.board, pos)
+            self.all_smicks[pos] = new_smick
+            self.live_smicks.append(new_smick)
+        elif existing_smick in self.live_smicks:
+            self.live_smicks.remove(existing_smick)
+
+    def reset_game(self):
+        self.person.reset()
+        self.reset_smicks()
+
     def reset_smicks(self):
-        self.live_smicks = list(self.all_smicks)
+        self.live_smicks = list(self.all_smicks.values())
         for smick in self.live_smicks:
             smick.reset()
 
@@ -171,7 +184,6 @@ class Game:
                 elif keys[pg.K_DOWN]:
                     self.person.move_down(self.editor_mode)
 
-                # pipe movement
                 if not self.editor_mode:
                     self.move_pipes(colors.BLUE, keys[pg.K_a] or keys[pg.K_b])
                     self.move_pipes(colors.RED, keys[pg.K_s] or keys[pg.K_r])
