@@ -3,6 +3,7 @@ import pygame as pg
 from pygame.locals import *
 from board import Board
 from characters import *
+from goals import *
 import pipe
 from editorpanel import EditorPanel
 import levelfile
@@ -32,15 +33,20 @@ class Game:
 
         self.board_screen_rect = pg.Rect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT)
 
-        block_matrix, person_pos, smick_pos_list = levelfile.create_from_file("levels/" + Game.LEVEL)
+        block_matrix, person_pos, smick_pos_list, coin_pos_list = levelfile.create_from_file("levels/" + Game.LEVEL)
         self.board = Board(self.board_screen_rect, block_matrix)
         self.pipes = pipe.create_pipes(self.board)
         self.person = Person(self.board, person_pos)
 
-        self.all_smicks = {}
+        self.smicks = {}
         for smick_pos in smick_pos_list:
-            self.all_smicks[smick_pos] = Smick(self.board, smick_pos)
-        self.live_smicks = list(self.all_smicks.values())
+            self.smicks[smick_pos] = Smick(self.board, smick_pos)
+
+        self.coins = {}
+        self.total_coins = len(coin_pos_list)
+        self.available_coins = self.total_coins
+        for coin_pos in coin_pos_list:
+            self.coins[coin_pos] = Coin(self.board, coin_pos)
 
         self.editor_mode = False
         self.editor_screen_rect = pg.Rect(0, 0, Game.EDITOR_WIDTH, Game.SCREEN_HEIGHT)
@@ -51,8 +57,12 @@ class Game:
         self.board.render(self.screen)
         self.render_pipes()
         self.person.render(self.screen)
-        for smick in self.live_smicks:
+
+        for smick in self.smicks.values():
             smick.render(self.screen)
+
+        for coin in self.coins.values():
+            coin.render(self.screen)
 
         if self.editor_mode:
             self.editor.render(self.screen)
@@ -99,7 +109,12 @@ class Game:
                 block = EmptyBlock()
             block_added = self.board.add_block_at(click_pos, block)
             if block_added:
+                (click_x, click_y) = click_pos
+                x, y = self.board.screen_coords_to_matrix_coords(click_x, click_y)
                 self.pipes = pipe.create_pipes(self.board)
+                if block.is_solid:
+                    self.toggle_smick((x, y))
+                    self.toggle_coin((x, y))
         elif self.editor_screen_rect.collidepoint(click_pos):
             self.editor.handle_click(click_pos)
 
@@ -113,9 +128,12 @@ class Game:
             if is_key_event(event, KEYUP, K_p): # toggle editor
                 self.toggle_editor()
             if is_key_event(event, KEYUP, K_x): # save level
-                levelfile.write_to_file(self.board.block_matrix, self.person, self.all_smicks)
+                levelfile.write_to_file(self.board.block_matrix, self.person, self.smicks, self.coins)
             if is_key_event(event, KEYUP, K_s) and self.editor_mode: # toggle smick (only in editor mode)
                 self.toggle_smick((self.person.x, self.person.y))
+            if is_key_event(event, KEYUP, K_c) and self.editor_mode: # toggle coin (only in editor mode)
+                self.toggle_coin((self.person.x, self.person.y))
+
 
     def move_pipes(self, color, down):
         for pipe in self.pipes[color]:
@@ -134,29 +152,47 @@ class Game:
             character.move_down()
 
     def toggle_smick(self, pos):
-        existing_smick = self.all_smicks.pop(pos, None)
-        if existing_smick == None:
-            new_smick = Smick(self.board, pos)
-            self.all_smicks[pos] = new_smick
-            self.live_smicks.append(new_smick)
-        elif existing_smick in self.live_smicks:
-            self.live_smicks.remove(existing_smick)
+        (x, y) = pos
+        existing_smick = self.smicks.pop(pos, None)
+        if existing_smick == None and not self.board.get_block(x, y).is_solid:
+            self.smicks[pos] = Smick(self.board, pos)
+
+    def toggle_coin(self, pos):
+        (x, y) = pos
+        existing_coin = self.coins.pop(pos, None)
+        if existing_coin == None:
+            if not self.board.get_block(x, y).is_solid:
+                self.coins[pos] = Coin(self.board, pos)
+                self.total_coins += 1
+        else:
+            self.total_coins -= 1
+        self.available_coins = self.total_coins
 
     def reset_game(self):
         self.person.reset()
         self.reset_smicks()
+        self.reset_coins()
 
     def reset_smicks(self):
-        self.live_smicks = list(self.all_smicks.values())
-        for smick in self.live_smicks:
+        for smick in self.smicks.values():
             smick.reset()
 
+    def reset_coins(self):
+        self.available_coins = self.total_coins
+        for coin in self.coins.values():
+            coin.reset()
+
     def resolve_deaths(self):
-        for smick in self.live_smicks:
-            if smick.x == self.person.x and smick.y == self.person.y:
+        for smick in self.smicks.values():
+            if smick.is_alive and (smick.x, smick.y) == (self.person.x, self.person.y):
                 self.person.kill()
 
-        self.live_smicks = [x for x in self.live_smicks if not x.is_dead]
+    def resolve_goals(self):
+        coin = self.coins.get((self.person.x, self.person.y))
+        if coin is not None:
+            coin.is_available = False
+            self.available_coins -= 1
+        #TODO: if self.available_coins == 0, open the door!        
 
     def run(self):
         time = 0
@@ -190,9 +226,11 @@ class Game:
                     self.move_pipes(colors.YELLOW, keys[pg.K_y])
                     self.move_pipes(colors.GREEN, keys[pg.K_g])
                     self.move_character(self.person)
-                    for smick in self.live_smicks:
-                        self.move_character(smick)
+                    for smick in self.smicks.values():
+                        if smick.is_alive:
+                            self.move_character(smick)
                     self.resolve_deaths()
+                    self.resolve_goals()
 
             self.board.adjust_view_port(self.person.x)
             self.render()

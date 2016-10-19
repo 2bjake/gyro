@@ -28,21 +28,21 @@ class Character(object):
         self.move(self.x, self.y - 1, force)
 
     def move(self, new_x, new_y, force=False):
-        if self.is_dead and self.can_reset:
+        if not self.is_alive and self.can_reset:
             self.reset()
         elif self.can_move(new_x, new_y) or (force and self.board.is_inside_border(new_x, new_y)):
             self.x, self.y = new_x, new_y
 
     def kill(self):
-        self.is_dead = True
+        self.is_alive = False
 
     def reset(self):
-        self.is_dead = False
+        self.is_alive = True
         self.x = self.start_x
         self.y = self.start_y
 
     def render(self, screen):
-        if not self.is_dead:
+        if self.is_alive:
             rect = self.board.get_render_rect(self.x, self.y)
             pg.draw.circle(screen, self.color, rect.center, rect.width / 4)
 
