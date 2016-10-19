@@ -22,9 +22,9 @@ class Board:
     def adjust_view_port(self, x):
         forward_scroll_buffer = self.view_rect.width / 2
         backward_scroll_buffer = self.view_rect.width / 4
-        end_x = min(self.view_rect.right, self.matrix_rect.right)
+        end_x = min(self.view_rect.right, self.matrix_rect.right - 1)
         if x > end_x - forward_scroll_buffer:
-            self.view_rect.right = min(self.matrix_rect.right, x + forward_scroll_buffer)
+            self.view_rect.right = min(self.matrix_rect.right - 1, x + forward_scroll_buffer)
         elif x < self.view_rect.left + backward_scroll_buffer:
             self.view_rect.left = max(0, x - backward_scroll_buffer)
 
@@ -43,7 +43,7 @@ class Board:
         return x, y
 
     def is_inside_border(self, x, y):
-        return (self.matrix_rect.left < x < self.matrix_rect.right - 1 and
+        return (self.matrix_rect.left < x < self.matrix_rect.right - 2 and
                 self.matrix_rect.top < y < self.matrix_rect.bottom - 1)
 
 
