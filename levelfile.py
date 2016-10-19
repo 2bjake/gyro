@@ -9,6 +9,7 @@ def create_from_file(file_name):
         width = len(lines[0])
 
         block_matrix = [[Block() for y in range(height)] for x in range(width)]
+        smick_pos_list = []
 
         for y in range(height):
             line = lines[y]
@@ -34,10 +35,13 @@ def create_from_file(file_name):
                 elif c == 'P':
                     b = EmptyBlock()
                     person_pos = (x, y)
+                elif c == 'S':
+                    b = EmptyBlock()
+                    smick_pos_list.append((x, y))
 
                 block_matrix[x][y] = b
 
-        return block_matrix, person_pos
+        return block_matrix, person_pos, smick_pos_list
 
 def write_to_file(block_matrix, person_x, person_y):
     width = len(block_matrix)

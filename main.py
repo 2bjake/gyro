@@ -2,7 +2,7 @@ import sys
 import pygame as pg
 from pygame.locals import *
 from board import Board
-from person import Person
+from characters import *
 import pipe
 from editorpanel import EditorPanel
 import levelfile
@@ -32,10 +32,15 @@ class Game:
 
         self.board_screen_rect = pg.Rect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT)
 
-        block_matrix, person_pos = levelfile.create_from_file("levels/" + Game.LEVEL)
+        block_matrix, person_pos, smick_pos_list = levelfile.create_from_file("levels/" + Game.LEVEL)
         self.board = Board(self.board_screen_rect, block_matrix)
         self.pipes = pipe.create_pipes(self.board)
         self.person = Person(self.board, person_pos)
+
+        self.all_smicks = []
+        for smick_pos in smick_pos_list:
+            self.all_smicks.append(Smick(self.board, smick_pos))
+        self.live_smicks = list(self.all_smicks)
 
         self.editor_mode = False
         self.editor_screen_rect = pg.Rect(0, 0, Game.EDITOR_WIDTH, Game.SCREEN_HEIGHT)
@@ -46,6 +51,9 @@ class Game:
         self.board.render(self.screen)
         self.render_pipes()
         self.person.render(self.screen)
+        for smick in self.live_smicks:
+            smick.render(self.screen)
+
         if self.editor_mode:
             self.editor.render(self.screen)
 
@@ -99,6 +107,7 @@ class Game:
                 sys.exit()
             if is_key_event(event, KEYUP, K_o):
                 self.person.reset()
+                self.reset_smicks()
             if is_key_event(event, KEYUP, K_p):
                 self.toggle_editor()
             if is_key_event(event, KEYUP, K_x):
@@ -109,17 +118,29 @@ class Game:
         for pipe in self.pipes[color]:
             pipe.move(down)
 
-    def resolve_collisions(self): #also handles falling which isn't really collisions...
-        block_at_person = self.board.get_block(self.person.x, self.person.y)
-        block_below_person = self.board.get_block(self.person.x, self.person.y - 1)
+    def move_character(self, character):
+        block_at_character = self.board.get_block(character.x, character.y)
+        block_below_character = self.board.get_block(character.x, character.y - 1)
 
-        if block_at_person.is_solid:
-            if self.person.can_move(self.person.x, self.person.y + 1):
-                self.person.move_up()
+        if block_at_character.is_solid:
+            if character.can_move(character.x, character.y + 1):
+                character.move_up()
             else:
+                character.kill()
+        elif not block_below_character.is_solid and not isinstance(block_at_character, RopeBlock):
+            character.move_down()
+
+    def reset_smicks(self):
+        self.live_smicks = list(self.all_smicks)
+        for smick in self.live_smicks:
+            smick.reset()
+
+    def resolve_deaths(self):
+        for smick in self.live_smicks:
+            if smick.x == self.person.x and smick.y == self.person.y:
                 self.person.kill()
-        elif not block_below_person.is_solid and not isinstance(block_at_person, RopeBlock):
-            self.person.move_down()
+
+        self.live_smicks = [x for x in self.live_smicks if not x.is_dead]
 
     def run(self):
         time = 0
@@ -153,7 +174,10 @@ class Game:
                     self.move_pipes(colors.RED, keys[pg.K_s] or keys[pg.K_r])
                     self.move_pipes(colors.YELLOW, keys[pg.K_y])
                     self.move_pipes(colors.GREEN, keys[pg.K_g])
-                    self.resolve_collisions()
+                    self.move_character(self.person)
+                    for smick in self.live_smicks:
+                        self.move_character(smick)
+                    self.resolve_deaths()
 
             self.board.adjust_view_port(self.person.x)
             self.render()
