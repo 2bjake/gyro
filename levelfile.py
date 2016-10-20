@@ -1,5 +1,6 @@
 from blocks import *
 import datetime
+from point import Point
 
 def create_from_file(file_name):
     with open(file_name,'r') as f:
@@ -18,6 +19,7 @@ def create_from_file(file_name):
             for x in range(width):
                 c = line[x]
                 b = Block()
+                pos = Point(x, y)
 
                 if c == '.':
                     b = EmptyBlock()
@@ -35,19 +37,19 @@ def create_from_file(file_name):
                     b = PipeBlock(colors.YELLOW)
                 elif c == 'C':
                     b = EmptyBlock()
-                    coin_pos_list.append((x, y))
+                    coin_pos_list.append(pos)
                 elif c == 'P':
                     b = EmptyBlock()
-                    person_pos = (x, y)
+                    person_pos = pos
                 elif c == 'p':
                     b = RopeBlock()
-                    person_pos = (x, y)
+                    person_pos = pos
                 elif c == 'S':
                     b = EmptyBlock()
-                    smick_pos_list.append((x, y))
+                    smick_pos_list.append(pos)
                 elif c == 's':
                     b = RopeBlock()
-                    smick_pos_list.append((x, y))
+                    smick_pos_list.append(pos)
 
                 block_matrix[x][y] = b
 
@@ -61,11 +63,12 @@ def write_to_file(block_matrix, person, smicks, coins):
     for y in range(height):
         line = ""
         for x in range(width):
-            at_person = x == person.start_x and y == person.start_y
-            at_smick = (x, y) in smicks
-            at_coin = (x, y) in coins
+            pos = Point(x, y)
+            at_person = (pos == person.start_pos)
+            at_smick = pos in smicks
+            at_coin = pos in coins
 
-            block = block_matrix[x][y]
+            block = block_matrix[pos.x][pos.y]
             c = '?'
 
             if isinstance(block, EmptyBlock):

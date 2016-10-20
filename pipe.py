@@ -2,6 +2,7 @@ from blocks import PipeBlock, EmptyBlock
 import pygame as pg
 import colors
 from collections import defaultdict
+from point import *
 
 
 def create_pipes(board):
@@ -10,24 +11,26 @@ def create_pipes(board):
     x, y = 0, 0
     while x < board.matrix_rect.width:
         while y < board.matrix_rect.height:
-            block = board.get_block(x, y)
+            pos = Point(x, y)
+            block = board.get_block(pos)
             if isinstance(block, PipeBlock):
-                pipe, y = create_pipe(board, x, y, block.color)
+                pipe = _create_pipe(board, pos, block.color)
                 pipes[block.color].append(pipe)
+                y = pipe.top_pos.y
             y += 1
         x += 1
         y = 0
     return pipes
 
-def create_pipe(board, bottom_x, bottom_y, color):
-    cur_y = bottom_y
-    cur_block = board.get_block(bottom_x, cur_y)
+def _create_pipe(board, bottom_pos, color):
+    cur_pos = bottom_pos
+    cur_block = board.get_block(cur_pos)
     while isinstance(cur_block, PipeBlock) and cur_block.color == color:
-        cur_y += 1
-        cur_block = board.get_block(bottom_x, cur_y)
-    top_y = cur_y - 1
+        cur_pos = point_up(cur_pos)
+        cur_block = board.get_block(cur_pos)
+    cur_pos = point_down(cur_pos)
 
-    return Pipe(board, bottom_x, top_y, bottom_y), top_y
+    return Pipe(board, cur_pos, bottom_pos)
 
 class Pipe:
 
@@ -37,35 +40,34 @@ class Pipe:
     ANCHOR_WIDTH_PERCENTAGE = .12
     ANCHOR_COLOR = colors.GREY
 
-    def __init__(self, board, x, top_y, bottom_y):
+    def __init__(self, board, top_pos, bottom_pos):
         self.board = board
-        self.x = x
-        self.top_y = top_y
-        self.max_top_y = top_y
+        self.top_pos = top_pos
+        self.bottom_pos = bottom_pos
 
-        self.bottom_y = bottom_y
-        self.min_bottom_y = self._find_min_bottom_y()
+        self.max_top_pos = top_pos
+        self.min_bottom_pos = self._find_min_bottom_pos()
 
-        self.anchor_y = bottom_y
+        self.anchor_pos = self.bottom_pos
 
-        self.color = board.get_block(x, top_y).color
+        self.color = board.get_block(self.top_pos).color
 
-    def _find_min_bottom_y(self):
-        length = self.top_y - self.bottom_y + 1
-
-        for i in range(1, length):
-            cur_y = self.bottom_y - i
-            cur_block = self.board.get_block(self.x, cur_y)
+    def _find_min_bottom_pos(self):
+        length = self.top_pos.y - self.bottom_pos.y + 1
+        cur_pos = self.bottom_pos
+        for _ in range(1, length):
+            cur_pos = point_down(cur_pos)
+            cur_block = self.board.get_block(cur_pos)
             if not isinstance(cur_block, EmptyBlock):
-                return cur_y + 1
+                return point_up(cur_pos)
 
-        return self.bottom_y - length + 1
+        return cur_pos
 
     def can_move_down(self):
-        return self.bottom_y > self.min_bottom_y
+        return self.bottom_pos.y > self.min_bottom_pos.y
 
     def can_move_up(self):
-        return self.top_y < self.max_top_y
+        return self.top_pos.y < self.max_top_pos.y
 
     def move(self, down=True):
         if down:
@@ -75,15 +77,15 @@ class Pipe:
 
     def move_up(self):
         if self.can_move_up():
-            self.top_y += 1
-            self.board.swap_blocks(self.x, self.top_y, self.x, self.bottom_y)
-            self.bottom_y += 1
+            self.top_pos = point_up(self.top_pos)
+            self.board.swap_blocks(self.top_pos, self.bottom_pos)
+            self.bottom_pos = point_up(self.bottom_pos)
 
     def move_down(self):
         if self.can_move_down():
-            self.bottom_y -= 1
-            self.board.swap_blocks(self.x, self.top_y, self.x, self.bottom_y)
-            self.top_y -= 1
+            self.bottom_pos = point_down(self.bottom_pos)
+            self.board.swap_blocks(self.top_pos, self.bottom_pos)
+            self.top_pos = point_down(self.top_pos)
 
     def render(self, screen):
         self._render_top_cap(screen)
@@ -96,13 +98,13 @@ class Pipe:
         rect.width = new_width
 
     def _render_top_cap(self, screen):
-        top_rect = self.board.get_render_rect(self.x, self.top_y)
+        top_rect = self.board.get_render_rect(self.top_pos)
         top_rect.height *= Pipe.PIPE_CAP_HEIGHT_PERCENTAGE
         self._set_cap_left_width(top_rect)
         pg.draw.rect(screen, self.color, top_rect)
 
     def _render_bottom_cap(self, screen):
-        bottom_rect = self.board.get_render_rect(self.x, self.bottom_y)
+        bottom_rect = self.board.get_render_rect(self.bottom_pos)
         new_height = bottom_rect.height * Pipe.PIPE_CAP_HEIGHT_PERCENTAGE
         bottom_rect.top += (bottom_rect.height - new_height) + 1
         bottom_rect.height = new_height
@@ -110,7 +112,7 @@ class Pipe:
         pg.draw.rect(screen, self.color, bottom_rect)
 
     def _render_anchor(self, screen):
-        anchor_rect = self.board.get_render_rect(self.x, self.anchor_y)
+        anchor_rect = self.board.get_render_rect(self.anchor_pos)
         block_height = anchor_rect.height
         block_width = anchor_rect.width
 
@@ -125,4 +127,4 @@ class Pipe:
 
 
     def __repr__(self):
-        return "x:{} top_y:{} bottom_y:{} max_top_y:{} min_bottom_y:{}".format(self.x, self.top_y, self.bottom_y, self.max_top_y, self.min_bottom_y)
+        return "top_pos:{} bottom_pos:{} max_top_pos:{} min_bottom_pos:{}".format(self.top_pos, self.bottom_pos, self.max_top_pos, self.min_bottom_pos)

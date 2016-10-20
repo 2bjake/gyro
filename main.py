@@ -9,6 +9,7 @@ from editorpanel import EditorPanel
 import levelfile
 import colors
 from blocks import *
+from point import *
 
 def is_key_event(event, type, *args):
     return event.type == type and event.key in args
@@ -76,7 +77,7 @@ class Game:
         max_x = min(self.board.matrix_rect.right, self.board.view_rect.right)
         for color in self.pipes:
             for pipe in self.pipes[color]:
-                if self.board.view_rect.left <= pipe.x < max_x: # could use collidepoint
+                if self.board.view_rect.left <= pipe.top_pos.x < max_x: # could use collidepoint
                     pipe.render(self.screen)
 
 
@@ -89,9 +90,7 @@ class Game:
         else:
             self.board_screen_rect = pg.Rect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT)
             #TODO: move the person to somewhere safe
-            self.person.start_x = self.person.x
-            self.person.start_y = self.person.y
-
+        self.person.set_start_pos()
         self.reset_game()
         self.board.set_screen_rect(self.board_screen_rect)
 
@@ -101,7 +100,7 @@ class Game:
         if not left and not right:
             return
 
-        click_pos = pg.mouse.get_pos()
+        click_pos = Point(*pg.mouse.get_pos())
 
         if self.board_screen_rect.collidepoint(click_pos):
             if left:
@@ -112,10 +111,9 @@ class Game:
             if block_added:
                 self.pipes = pipe.create_pipes(self.board)
                 if block.is_solid:
-                    (click_x, click_y) = click_pos
-                    x, y = self.board.screen_coords_to_matrix_coords(click_x, click_y)
-                    self.toggle_smick((x, y))
-                    self.toggle_coin((x, y))
+                    matrix_pos = self.board.screen_coords_to_matrix_coords(click_pos)
+                    self.toggle_smick(matrix_pos)
+                    self.toggle_coin(matrix_pos)
         elif self.editor_screen_rect.collidepoint(click_pos):
             self.editor.handle_click(click_pos)
 
@@ -129,23 +127,24 @@ class Game:
             if is_key_event(event, KEYUP, K_p): # toggle editor
                 self.toggle_editor()
             if is_key_event(event, KEYUP, K_x): # save level
+                self.person.set_start_pos()
                 levelfile.write_to_file(self.board.block_matrix, self.person, self.smicks, self.coins)
             if is_key_event(event, KEYUP, K_s) and self.editor_mode: # toggle smick (only in editor mode)
-                self.toggle_smick((self.person.x, self.person.y))
+                self.toggle_smick(self.person.pos)
             if is_key_event(event, KEYUP, K_c) and self.editor_mode: # toggle coin (only in editor mode)
-                self.toggle_coin((self.person.x, self.person.y))
-
+                self.toggle_coin(self.person.pos)
 
     def move_pipes(self, color, down):
         for pipe in self.pipes[color]:
             pipe.move(down)
 
     def move_character(self, character):
-        block_at_character = self.board.get_block(character.x, character.y)
-        block_below_character = self.board.get_block(character.x, character.y - 1)
+        block_at_character = self.board.get_block(character.pos)
+
+        block_below_character = self.board.get_block(point_down(character.pos))
 
         if block_at_character.is_solid:
-            if character.can_move(character.x, character.y + 1):
+            if character.can_move(point_up(character.pos)):
                 character.move_up()
             else:
                 character.kill()
@@ -153,16 +152,14 @@ class Game:
             character.move_down()
 
     def toggle_smick(self, pos):
-        (x, y) = pos
         existing_smick = self.smicks.pop(pos, None)
-        if existing_smick == None and not self.board.get_block(x, y).is_solid:
+        if existing_smick == None and not self.board.get_block(pos).is_solid:
             self.smicks[pos] = Smick(self.board, pos)
 
     def toggle_coin(self, pos):
         existing_coin = self.coins.pop(pos, None)
         if existing_coin == None:
-            (x, y) = pos
-            if not self.board.get_block(x, y).is_solid:
+            if not self.board.get_block(pos).is_solid:
                 self.coins[pos] = Coin(self.board, pos)
                 self.total_coin_count += 1
         else:
@@ -194,11 +191,11 @@ class Game:
 
     def resolve_deaths(self):
         for smick in self.smicks.values():
-            if smick.is_alive and (smick.x, smick.y) == (self.person.x, self.person.y):
+            if smick.is_alive and smick.pos == self.person.pos:
                 self.person.kill()
 
     def resolve_goals(self):
-        coin = self.coins.get((self.person.x, self.person.y))
+        coin = self.coins.get(self.person.pos)
         if coin is not None and coin.is_available:
             coin.is_available = False
             self.set_available_coin_count(self.available_coin_count - 1)
@@ -241,7 +238,7 @@ class Game:
                     self.resolve_deaths()
                     self.resolve_goals()
 
-            self.board.adjust_view_port(self.person.x)
+            self.board.adjust_view_port(self.person.pos.x)
             self.render()
             pg.display.update()
             time += 1
