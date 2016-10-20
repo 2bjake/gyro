@@ -8,7 +8,7 @@ class EditorPanel:
     def __init__(self, screen_rect):
         self.screen_rect = screen_rect
         self.index = 0
-        self.blocks = [PipeBlock(colors.RED), PipeBlock(colors.BLUE), EmptyBlock(), RopeBlock(), GroundBlock()]
+        self.blocks = [PipeBlock(colors.RED), PipeBlock(colors.BLUE), EmptyBlock(), RopeBlock(), GroundBlock(), DoorBlock()]
 
     def handle_click(self, click_pos):
         for i in range(len(self.blocks)):

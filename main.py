@@ -16,7 +16,7 @@ def is_key_event(event, type, *args):
 class Game:
     SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 500
 
-    EDITOR_WIDTH = 100
+    EDITOR_WIDTH = 80
 
     #LEVEL = "rope"
     #LEVEL = "scrolling_colorful"
@@ -34,6 +34,7 @@ class Game:
         self.board_screen_rect = pg.Rect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT)
 
         block_matrix, person_pos, smick_pos_list, coin_pos_list = levelfile.create_from_file("levels/" + Game.LEVEL)
+        #TODO move game state data into separate class
         self.board = Board(self.board_screen_rect, block_matrix)
         self.pipes = pipe.create_pipes(self.board)
         self.person = Person(self.board, person_pos)
@@ -85,13 +86,13 @@ class Game:
         #TODO: make these rects contants?
         if self.editor_mode:
             self.board_screen_rect = pg.Rect(Game.EDITOR_WIDTH, 0, Game.SCREEN_WIDTH - Game.EDITOR_WIDTH, Game.SCREEN_HEIGHT)
-            self.reset_game()
         else:
             self.board_screen_rect = pg.Rect(0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT)
             #TODO: move the person to somewhere safe
             self.person.start_x = self.person.x
             self.person.start_y = self.person.y
 
+        self.reset_game()
         self.board.set_screen_rect(self.board_screen_rect)
 
     def handle_mouse_events(self):
@@ -109,10 +110,10 @@ class Game:
                 block = EmptyBlock()
             block_added = self.board.add_block_at(click_pos, block)
             if block_added:
-                (click_x, click_y) = click_pos
-                x, y = self.board.screen_coords_to_matrix_coords(click_x, click_y)
                 self.pipes = pipe.create_pipes(self.board)
                 if block.is_solid:
+                    (click_x, click_y) = click_pos
+                    x, y = self.board.screen_coords_to_matrix_coords(click_x, click_y)
                     self.toggle_smick((x, y))
                     self.toggle_coin((x, y))
         elif self.editor_screen_rect.collidepoint(click_pos):
@@ -158,9 +159,9 @@ class Game:
             self.smicks[pos] = Smick(self.board, pos)
 
     def toggle_coin(self, pos):
-        (x, y) = pos
         existing_coin = self.coins.pop(pos, None)
         if existing_coin == None:
+            (x, y) = pos
             if not self.board.get_block(x, y).is_solid:
                 self.coins[pos] = Coin(self.board, pos)
                 self.total_coin_count += 1
@@ -171,6 +172,7 @@ class Game:
     def set_available_coin_count(self, count):
         self.available_coin_count = count
         print(self.available_coin_count)
+
         if self.available_coin_count == 0:
             pass #open the door
         else:

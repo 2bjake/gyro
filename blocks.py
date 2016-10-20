@@ -16,6 +16,25 @@ class EmptyBlock(Block):
     def render(self, screen, rect):
         pass # nothing to draw
 
+class DoorBlock(Block):
+    DOOR_WIDTH_PERCENTAGE = .7
+    DOOR_CRACK_WIDTH = 3
+
+    def __init__(self):
+        self.is_solid = True
+        self.is_open = False
+        self.color = colors.ORANGE
+
+    def render(self, screen, rect):
+        door_rect = rect.copy()
+        door_rect.width = door_rect.width * DoorBlock.DOOR_WIDTH_PERCENTAGE
+        door_rect.left += (rect.width - door_rect.width) / 2
+        if not self.is_open:
+            pg.draw.rect(screen, self.color, door_rect)
+            pg.draw.line(screen, colors.BLACK, rect.midtop, rect.midbottom, DoorBlock.DOOR_CRACK_WIDTH)
+        else:
+            pass #draw open door
+
 class GroundBlock(Block):
     GROUND_HEIGHT_PERCENTAGE = .125
     MID_LINE_WIDTH = 5
