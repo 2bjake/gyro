@@ -94,12 +94,11 @@ def write_to_file(block_matrix, person, smicks, coins):
                 c = 'R'
 
             line += c
-        line += '\n'
         lines.append(line)
 
     lines.reverse()
 
     file_name = "levels/" + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
     f = open(file_name, 'w')
-    f.writelines(lines)
+    f.write("\n".join(lines))
     f.close()

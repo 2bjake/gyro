@@ -20,8 +20,8 @@ class Game:
 
     #LEVEL = "rope"
     #LEVEL = "scrolling_colorful"
-    #LEVEL = "kara"
-    LEVEL = "empty"
+    LEVEL = "jess_first"
+    #LEVEL = "empty"
 
     def __init__(self):
         pg.init()
@@ -43,8 +43,8 @@ class Game:
             self.smicks[smick_pos] = Smick(self.board, smick_pos)
 
         self.coins = {}
-        self.total_coins = len(coin_pos_list)
-        self.available_coins = self.total_coins
+        self.total_coin_count = len(coin_pos_list)
+        self.set_available_coin_count(self.total_coin_count)
         for coin_pos in coin_pos_list:
             self.coins[coin_pos] = Coin(self.board, coin_pos)
 
@@ -163,10 +163,18 @@ class Game:
         if existing_coin == None:
             if not self.board.get_block(x, y).is_solid:
                 self.coins[pos] = Coin(self.board, pos)
-                self.total_coins += 1
+                self.total_coin_count += 1
         else:
-            self.total_coins -= 1
-        self.available_coins = self.total_coins
+            self.total_coin_count -= 1
+        self.set_available_coin_count(self.total_coin_count)
+
+    def set_available_coin_count(self, count):
+        self.available_coin_count = count
+        print(self.available_coin_count)
+        if self.available_coin_count == 0:
+            pass #open the door
+        else:
+            pass #close the door
 
     def reset_game(self):
         self.person.reset()
@@ -178,7 +186,7 @@ class Game:
             smick.reset()
 
     def reset_coins(self):
-        self.available_coins = self.total_coins
+        self.set_available_coin_count(self.total_coin_count)
         for coin in self.coins.values():
             coin.reset()
 
@@ -189,10 +197,9 @@ class Game:
 
     def resolve_goals(self):
         coin = self.coins.get((self.person.x, self.person.y))
-        if coin is not None:
+        if coin is not None and coin.is_available:
             coin.is_available = False
-            self.available_coins -= 1
-        #TODO: if self.available_coins == 0, open the door!        
+            self.set_available_coin_count(self.available_coin_count - 1)
 
     def run(self):
         time = 0
