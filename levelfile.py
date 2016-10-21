@@ -1,7 +1,7 @@
 from blocks import *
 import datetime
 from point import Point
-from state impor GameState
+from state import GameState
 
 def create_from_file(file_name):
     with open(file_name,'r') as f:
