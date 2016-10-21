@@ -48,7 +48,6 @@ class Character(object):
             rect = self.board.get_render_rect(self.pos)
             pg.draw.circle(screen, self.color, rect.center, rect.width / 4)
 
-
 class Person(Character):
     def __init__(self, board, start_pos):
         super(Person, self).__init__(board, start_pos)

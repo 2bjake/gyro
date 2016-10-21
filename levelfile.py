@@ -1,6 +1,7 @@
 from blocks import *
 import datetime
 from point import Point
+from state impor GameState
 
 def create_from_file(file_name):
     with open(file_name,'r') as f:
@@ -35,6 +36,11 @@ def create_from_file(file_name):
                     b = PipeBlock(colors.GREEN)
                 elif c == 'Y':
                     b = PipeBlock(colors.YELLOW)
+                elif c == 'D':
+                    b = DoorBlock()
+                elif c == 'c':
+                    b = RopeBlock()
+                    coin_pos_list.append(pos)
                 elif c == 'C':
                     b = EmptyBlock()
                     coin_pos_list.append(pos)
@@ -53,9 +59,10 @@ def create_from_file(file_name):
 
                 block_matrix[x][y] = b
 
-        return block_matrix, person_pos, smick_pos_list, coin_pos_list
+        return GameState(block_matrix, person_pos, smick_pos_list, coin_pos_list)
 
-def write_to_file(block_matrix, person, smicks, coins):
+def write_to_file(game_state):
+    block_matrix = game_state.board.block_matrix
     width = len(block_matrix)
     height = len(block_matrix[0])
     lines = []
@@ -64,9 +71,9 @@ def write_to_file(block_matrix, person, smicks, coins):
         line = ""
         for x in range(width):
             pos = Point(x, y)
-            at_person = (pos == person.start_pos)
-            at_smick = pos in smicks
-            at_coin = pos in coins
+            at_person = (pos == game_state.person.pos)
+            at_smick = pos in game_state.smicks
+            at_coin = pos in game_state.coins
 
             block = block_matrix[pos.x][pos.y]
             c = '?'

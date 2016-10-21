@@ -1,36 +1,7 @@
 from blocks import PipeBlock, EmptyBlock
 import pygame as pg
 import colors
-from collections import defaultdict
 from point import *
-
-
-def create_pipes(board):
-    pipes = defaultdict(list)
-
-    x, y = 0, 0
-    while x < board.matrix_rect.width:
-        while y < board.matrix_rect.height:
-            pos = Point(x, y)
-            block = board.get_block(pos)
-            if isinstance(block, PipeBlock):
-                pipe = _create_pipe(board, pos, block.color)
-                pipes[block.color].append(pipe)
-                y = pipe.top_pos.y
-            y += 1
-        x += 1
-        y = 0
-    return pipes
-
-def _create_pipe(board, bottom_pos, color):
-    cur_pos = bottom_pos
-    cur_block = board.get_block(cur_pos)
-    while isinstance(cur_block, PipeBlock) and cur_block.color == color:
-        cur_pos = point_up(cur_pos)
-        cur_block = board.get_block(cur_pos)
-    cur_pos = point_down(cur_pos)
-
-    return Pipe(board, cur_pos, bottom_pos)
 
 class Pipe:
 

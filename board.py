@@ -44,7 +44,7 @@ class Board:
         return Point(x, y)
 
     def is_inside_border(self, pos):
-        return (self.matrix_rect.left < pos.x < self.matrix_rect.right - 2 and
+        return (self.matrix_rect.left < pos.x < self.matrix_rect.right - 1 and
                 self.matrix_rect.top < pos.y < self.matrix_rect.bottom - 1)
 
 
