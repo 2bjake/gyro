@@ -29,7 +29,7 @@ class GameState:
         self.total_coin_count = len(coin_pos_list)
         self.set_available_coin_count(self.total_coin_count)
         for coin_pos in coin_pos_list:
-            self.coins[coin_pos] = Coin(self.board, coin_pos)
+            self.coins[coin_pos] = Coin(coin_pos)
 
         self.editor_enabled = False
         self.editor_screen_rect = pg.Rect(0, 0, GameState.TEMP_EDITOR_WIDTH, GameState.TEMP_SCREEN_HEIGHT)
@@ -66,7 +66,7 @@ class GameState:
         for pipe in self.pipes[color]:
             pipe.move(down)
 
-    def move_character(self, character):
+    def update_character(self, character):
         block_at_character = self.board.get_block(character.pos)
 
         block_below_character = self.board.get_block(point_down(character.pos))
@@ -101,7 +101,7 @@ class GameState:
         existing_coin = self.coins.pop(pos, None)
         if existing_coin == None:
             if not self.board.get_block(pos).is_solid:
-                self.coins[pos] = Coin(self.board, pos)
+                self.coins[pos] = Coin(pos)
                 self.total_coin_count += 1
         else:
             self.total_coin_count -= 1
@@ -132,10 +132,10 @@ class GameState:
 
     def update_state(self):
         self.resolve_goals()
-        self.move_character(self.person)
+        self.update_character(self.person)
         for smick in self.smicks.values():
             if smick.is_alive:
-                self.move_character(smick)
+                self.update_character(smick)
         self.resolve_deaths()
 
     def resolve_deaths(self):

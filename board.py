@@ -47,7 +47,7 @@ class Board:
         return (self.matrix_rect.left < pos.x < self.matrix_rect.right - 1 and
                 self.matrix_rect.top < pos.y < self.matrix_rect.bottom - 1)
 
-
+    #TODO: this method is weird, board shouldn't know about screen coords
     def add_block_at(self, click_pos, block):
         matrix_pos = self.screen_coords_to_matrix_coords(click_pos)
         if self.is_inside_border(matrix_pos):

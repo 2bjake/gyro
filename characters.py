@@ -7,7 +7,6 @@ class Character(object):
         self.board = board
         self.start_pos = start_pos
         self.reset()
-        self.color = colors.WHITE
         self.can_reset = False
 
     def can_move(self, new_pos):
@@ -45,10 +44,8 @@ class Character(object):
 class Person(Character):
     def __init__(self, board, start_pos):
         super(Person, self).__init__(board, start_pos)
-        self.color = colors.PINK
         self.can_reset = True
 
 class Smick(Character):
     def __init__(self, board, start_pos):
         super(Smick, self).__init__(board, start_pos)
-        self.color = colors.GREEN
