@@ -11,9 +11,7 @@ def is_key_event(event, type, *args):
     return event.type == type and event.key in args
 
 class Main:
-    SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 500
-
-    EDITOR_WIDTH = 80
+    SCREEN_WIDTH, SCREEN_HEIGHT = 980, 500
 
     #LEVEL = "jess_first"
     LEVEL = "miles_first"

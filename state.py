@@ -18,7 +18,7 @@ class GameState:
         self.board_screen_rect = pg.Rect(0, 0, GameState.TEMP_SCREEN_WIDTH, GameState.TEMP_SCREEN_HEIGHT)
         self.board = Board(self.board_screen_rect, block_matrix)
 
-        self.pipes = self.create_pipes()
+        self.create_pipes()
         self.person = Person(self.board, person_pos)
 
         self.smicks = {}
@@ -36,7 +36,7 @@ class GameState:
         self.editor = EditorPanel(self.editor_screen_rect)
 
     def create_pipes(self):
-        pipes = defaultdict(list)
+        self.pipes = defaultdict(list)
 
         x, y = 0, 0
         while x < self.board.matrix_rect.width:
@@ -45,12 +45,11 @@ class GameState:
                 block = self.board.get_block(pos)
                 if isinstance(block, PipeBlock):
                     pipe = self._create_pipe(pos, block.color)
-                    pipes[block.color].append(pipe)
+                    self.pipes[block.color].append(pipe)
                     y = pipe.top_pos.y
                 y += 1
             x += 1
             y = 0
-        return pipes
 
     def _create_pipe(self, bottom_pos, color):
         cur_pos = bottom_pos

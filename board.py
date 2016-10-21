@@ -55,17 +55,6 @@ class Board:
             return True
         return False
 
-    def render(self, screen):
-        #render all blocks in view_port
-        max_x = min(self.matrix_rect.right, self.view_rect.right) #might not be necessary, make adjust_view_port always have view_rect right
-        for x in range(self.view_rect.left, max_x):
-            for y in range(self.matrix_rect.height):
-                self._render_block(screen, Point(x, y))
-
-    def _render_block(self, screen, pos):
-        rect = self.get_render_rect(pos)
-        self.get_block(pos).render(screen, rect)
-
     def _set_block(self, pos, block):
         self.block_matrix[pos.x][pos.y] = block
 
