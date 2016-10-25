@@ -5,57 +5,108 @@ from pipe import *
 from blocks import *
 import colors
 
-class Renderer:
+class View:
     EDITOR_WIDTH = 80
+    BLOCK_SIZE = 50
 
-    def __init__(self, screen, screen_width, screen_height):
+    def __init__(self, screen_width, screen_height):
         self._screen_width = screen_width
         self._screen_height = screen_height
-        self._screen = screen
+        self._screen = pg.display.set_mode((screen_width, screen_height), 0, 32)
+        pg.display.set_caption('GyroMine')
 
-        self._editor_screen_rect = pg.Rect(0, 0, Renderer.EDITOR_WIDTH, screen_height)
+        self._editor_screen_rect = pg.Rect(0, 0, View.EDITOR_WIDTH, screen_height)
         self._board_no_editor_screen_rect = pg.Rect(0, 0, screen_width, screen_height)
-        self._board_with_editor_screen_rect = pg.Rect(Renderer.EDITOR_WIDTH, 0, screen_width - Renderer.EDITOR_WIDTH, screen_height)
+        self._board_with_editor_screen_rect = pg.Rect(View.EDITOR_WIDTH, 0, screen_width - View.EDITOR_WIDTH, screen_height)
+
+        self._board_view_rect = pg.Rect(0, 0, screen_width / View.BLOCK_SIZE, screen_height / View.BLOCK_SIZE)
 
         self._character_renderer = CharacterRenderer(self._screen)
         self._pipe_renderer = PipeRenderer(self._screen)
         self._coin_renderer = CoinRenderer(self._screen)
         self._block_renderer = BlockRenderer(self._screen)
-        self._board_renderer = BoardRenderer(self._screen, self._block_renderer)
         self._editor_renderer = EditorRenderer(self._screen, self._block_renderer)
 
-    def _get_board_screen_rect(self, editor_enabled):
+    def _get_render_rect_for_board_position(self, pos, game_state): #TODO: change this to take editor_enabled instead of game_state
+        screen_pos = self._get_screen_coords_for_board_position(pos, game_state.editor_enabled)
+        return pg.Rect(screen_pos, (View.BLOCK_SIZE, View.BLOCK_SIZE))
+
+    def _get_screen_coords_for_board_position(self, board_pos, editor_enabled):
+        screen_rect = self.get_board_screen_rect(editor_enabled)
+
+        x = screen_rect.x + View.BLOCK_SIZE * (board_pos.x - self._board_view_rect.left)
+        y = screen_rect.top + View.BLOCK_SIZE * (self._board_view_rect.height - board_pos.y - 1)
+        return Point(x, y)
+
+    def _get_in_view_board_rect(self, game_state):
+        board_screen_rect = self.get_board_screen_rect(game_state.editor_enabled)
+        board_view_width = board_screen_rect.width / View.BLOCK_SIZE
+        board_view_height = board_screen_rect.height / View.BLOCK_SIZE
+
+        board_view_rect = pg.Rect(0, 0, board_view_width, board_view_height)
+
+        forward_scroll_buffer = board_view_width / 2
+        board_view_rect.right = game_state.person.pos.x + forward_scroll_buffer
+        if board_view_rect.right > game_state.board.matrix_rect.right:
+            board_view_rect.right = game_state.board.matrix_rect.right
+
+        if board_view_rect.left < 0:
+            board_view_rect.left = 0
+
+        return board_view_rect
+
+    def get_board_screen_rect(self, editor_enabled):
         if editor_enabled:
             return self._board_with_editor_screen_rect
         else:
             return self._board_no_editor_screen_rect
 
+    def get_editor_screen_rect(self):
+        return self._editor_screen_rect
+
+    def get_board_position_for_screen_position(self, screen_pos, editor_enabled):
+        board_screen_rect = self.get_board_screen_rect(editor_enabled)
+        x = (screen_pos.x - board_screen_rect.x) / View.BLOCK_SIZE + self._board_view_rect.left
+        y = self._board_view_rect.height - screen_pos.y / View.BLOCK_SIZE - 1 + board_screen_rect.y
+        return Point(x, y)
+
     def render(self, game_state):
+        self._board_view_rect = self._get_in_view_board_rect(game_state)
+
         self._screen.fill(colors.BLACK)
-        board_rect = self._get_board_screen_rect(game_state.editor_enabled)
-        self._board_renderer.render(game_state.board, board_rect)
+        board_rect = self.get_board_screen_rect(game_state.editor_enabled)
+        self._render_board(game_state)
         self._render_visible_pipes(game_state)
 
-        self._character_renderer.render_smicks(game_state.smicks.values())
-        self._character_renderer.render_person(game_state.person)
-        
+        for smick in game_state.smicks.values():
+            smick_rect = self._get_render_rect_for_board_position(smick.pos, game_state)
+            self._character_renderer.render_smick(smick, smick_rect)
+
+        self._character_renderer.render_person(game_state.person, self._get_render_rect_for_board_position(game_state.person.pos, game_state))
 
         for coin in game_state.coins.values():
-            coin_rect = game_state.board.get_render_rect(coin.pos)
+            coin_rect = self._get_render_rect_for_board_position(coin.pos, game_state)
             self._coin_renderer.render(coin, coin_rect)
 
         if game_state.editor_enabled:
             self._editor_renderer.render(game_state.editor, self._editor_screen_rect)
 
+    def _render_board(self, game_state):
+        for x in range(self._board_view_rect.left, self._board_view_rect.right):
+            for y in range(self._board_view_rect.height):
+                pos = Point(x, y)
+                block = game_state.board.get_block(pos)
+                render_rect = self._get_render_rect_for_board_position(pos, game_state)
+                self._block_renderer.render_block(block, render_rect)
+
     def _render_visible_pipes(self, game_state):
-        #TODO: figure out the right way to do this without getting board internals
-        # not sure i need to do this min, make adjust_view_port always make view_rect the right values
-        # and then this code can just use it
-        max_x = min(game_state.board.matrix_rect.right, game_state.board.view_rect.right)
         for color in game_state.pipes:
             for pipe in game_state.pipes[color]:
-                if game_state.board.view_rect.left <= pipe.top_pos.x < max_x: # could use collidepoint
-                    self._pipe_renderer.render_details(pipe)
+                if self._board_view_rect.left <= pipe.top_pos.x < self._board_view_rect.right:
+                    top_render_rect = self._get_render_rect_for_board_position(pipe.top_pos, game_state)
+                    bottom_render_rect = self._get_render_rect_for_board_position(pipe.bottom_pos, game_state)
+                    anchor_render_rect = self._get_render_rect_for_board_position(pipe.anchor_pos, game_state)
+                    self._pipe_renderer.render_details(pipe, top_render_rect, bottom_render_rect, anchor_render_rect)
 
 class CharacterRenderer:
     PERSON_COLOR = colors.PINK
@@ -66,17 +117,15 @@ class CharacterRenderer:
     def __init__(self, screen):
         self._screen = screen
 
-    def render_person(self, person):
-        self._render_character(person, CharacterRenderer.PERSON_COLOR, CharacterRenderer.PERSON_SCALE)
+    def render_person(self, person, render_rect):
+        self._render_character(person, render_rect, CharacterRenderer.PERSON_COLOR, CharacterRenderer.PERSON_SCALE)
 
-    def render_smicks(self, smicks):
-        for smick in smicks:
-            self._render_character(smick, CharacterRenderer.SMICK_COLOR, CharacterRenderer.SMICK_SCALE)
+    def render_smick(self, smick, render_rect):
+        self._render_character(smick, render_rect, CharacterRenderer.SMICK_COLOR, CharacterRenderer.SMICK_SCALE)
 
-    def _render_character(self, character, color, scale):
+    def _render_character(self, character, render_rect, color, scale):
         if character.is_alive:
-            rect = character.board.get_render_rect(character.pos)
-            pg.draw.circle(self._screen, color, rect.center, int(rect.width * scale))
+            pg.draw.circle(self._screen, color, render_rect.center, int(render_rect.width * scale))
 
 class CoinRenderer:
     COIN_COLOR = colors.YELLOW
@@ -87,20 +136,6 @@ class CoinRenderer:
     def render(self, coin, rect):
         if coin.is_available:            
             pg.draw.circle(self._screen, CoinRenderer.COIN_COLOR, rect.center, rect.width / 8)
-
-class BoardRenderer:
-    def __init__(self, screen, block_renderer):
-        self._screen = screen
-        self._block_renderer = block_renderer
-
-    def render(self, board, rect):
-        #render all blocks in view_port
-        max_x = min(board.matrix_rect.right, board.view_rect.right) #might not be necessary, make adjust_view_port always have view_rect right
-        for x in range(board.view_rect.left, max_x):
-            for y in range(board.matrix_rect.height):
-                pos = Point(x, y)
-                self._block_renderer.render_block(board.get_block(pos), board.get_render_rect(pos)) #TODO: use rect passed in
-
 
 class BlockRenderer:
     def __init__(self, screen):
@@ -175,10 +210,10 @@ class PipeRenderer:
     def __init__(self, screen):
         self._screen = screen
 
-    def render_details(self, pipe):
-        self._render_top_cap(pipe)
-        self._render_bottom_cap(pipe)
-        self._render_anchor(pipe)
+    def render_details(self, pipe, top_render_rect, bottom_render_rect, anchor_render_rect):
+        self._render_top_cap(pipe, top_render_rect)
+        self._render_bottom_cap(pipe, bottom_render_rect)
+        self._render_anchor(pipe, anchor_render_rect)
 
     def _make_cap_rect(self, rect):
         new_width = rect.width * PipeRenderer.CAP_WIDTH_PERCENTAGE
@@ -186,15 +221,13 @@ class PipeRenderer:
         rect.width = new_width
         return rect
 
-    def _render_top_cap(self, pipe):
-        top_rect = pipe.board.get_render_rect(pipe.top_pos)
+    def _render_top_cap(self, pipe, top_rect):
         top_rect = self._make_cap_rect(top_rect)
         top_rect.height *= PipeRenderer.CAP_HEIGHT_PERCENTAGE
 
         pg.draw.rect(self._screen, pipe.color, top_rect)
 
-    def _render_bottom_cap(self, pipe):
-        bottom_rect = pipe.board.get_render_rect(pipe.bottom_pos)
+    def _render_bottom_cap(self, pipe, bottom_rect):
         bottom_rect = self._make_cap_rect(bottom_rect)
         new_height = bottom_rect.height * PipeRenderer.CAP_HEIGHT_PERCENTAGE
         bottom_rect.top += (bottom_rect.height - new_height) + 1
@@ -202,8 +235,7 @@ class PipeRenderer:
 
         pg.draw.rect(self._screen, pipe.color, bottom_rect)
 
-    def _render_anchor(self, pipe):
-        anchor_rect = pipe.board.get_render_rect(pipe.anchor_pos)
+    def _render_anchor(self, pipe, anchor_rect):
         block_height = anchor_rect.height
         block_width = anchor_rect.width
 

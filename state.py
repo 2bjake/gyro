@@ -10,13 +10,12 @@ from blocks import *
 from point import *
 
 class GameState:
-    TEMP_SCREEN_WIDTH, TEMP_SCREEN_HEIGHT = 1000, 500
+    #TODO remove these
+    TEMP_SCREEN_HEIGHT = 500
     TEMP_EDITOR_WIDTH = 80
 
     def __init__(self, block_matrix, person_pos, smick_pos_list, coin_pos_list):
-        #TODO: these rects don't belong here
-        self.board_screen_rect = pg.Rect(0, 0, GameState.TEMP_SCREEN_WIDTH, GameState.TEMP_SCREEN_HEIGHT)
-        self.board = Board(self.board_screen_rect, block_matrix)
+        self.board = Board(block_matrix)
 
         self.create_pipes()
         self.person = Person(self.board, person_pos)
@@ -32,7 +31,7 @@ class GameState:
             self.coins[coin_pos] = Coin(coin_pos)
 
         self.editor_enabled = False
-        self.editor_screen_rect = pg.Rect(0, 0, GameState.TEMP_EDITOR_WIDTH, GameState.TEMP_SCREEN_HEIGHT)
+        self.editor_screen_rect = pg.Rect(0, 0, GameState.TEMP_EDITOR_WIDTH, GameState.TEMP_SCREEN_HEIGHT) #TODO: get rid of this
         self.editor = EditorPanel(self.editor_screen_rect)
 
     def create_pipes(self):
@@ -81,15 +80,9 @@ class GameState:
     def toggle_editor(self):
         self.editor_enabled = not self.editor_enabled
 
-        #TODO: make these rects contants?
-        if self.editor_enabled:
-            self.board_screen_rect = pg.Rect(GameState.TEMP_EDITOR_WIDTH, 0, GameState.TEMP_SCREEN_WIDTH - GameState.TEMP_EDITOR_WIDTH, GameState.TEMP_SCREEN_HEIGHT)
-        else:
-            self.board_screen_rect = pg.Rect(0, 0, GameState.TEMP_SCREEN_WIDTH, GameState.TEMP_SCREEN_HEIGHT)
-            #TODO: move the person to somewhere safe
+        #TODO: move the person to somewhere safe
         self.person.set_start_pos()
         self.reset()
-        self.board.set_screen_rect(self.board_screen_rect)
 
     def toggle_smick(self, pos):
         existing_smick = self.smicks.pop(pos, None)

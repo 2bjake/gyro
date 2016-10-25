@@ -4,28 +4,24 @@ from pygame.locals import *
 import levelfile
 import colors
 from point import Point
-from renderer import Renderer
+from view import View
 from blocks import EmptyBlock
 
 def is_key_event(event, type, *args):
     return event.type == type and event.key in args
 
 class Main:
-    SCREEN_WIDTH, SCREEN_HEIGHT = 980, 500
+    SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 500
 
     #LEVEL = "jess_first"
     LEVEL = "miles_first"
     #LEVEL = "empty"
+    #LEVEL = "scrolling_colorful"
 
     def __init__(self):
         pg.init()
         self.clock = pg.time.Clock()
-
-        screen = pg.display.set_mode((Main.SCREEN_WIDTH, Main.SCREEN_HEIGHT), 0, 32)
-        self.renderer = Renderer(screen, Main.SCREEN_WIDTH, Main.SCREEN_HEIGHT)
-
-        pg.display.set_caption('GyroMine')
-
+        self.view = View(Main.SCREEN_WIDTH, Main.SCREEN_HEIGHT)
         self.game_state = levelfile.create_from_file("levels/" + Main.LEVEL)
 
     def handle_mouse_events(self):
@@ -36,20 +32,21 @@ class Main:
 
         click_pos = Point(*pg.mouse.get_pos())
 
-        if self.game_state.board_screen_rect.collidepoint(click_pos):
+        board_screen_rect = self.view.get_board_screen_rect(self.game_state.editor_enabled)
+        if board_screen_rect.collidepoint(click_pos):
             if left:
                 block = self.game_state.editor.get_selected_block()
             elif right:
                 block = EmptyBlock()
-            block_added = self.game_state.board.add_block_at(click_pos, block)
+            board_pos = self.view.get_board_position_for_screen_position(click_pos, self.game_state.editor_enabled)
+            block_added = self.game_state.board.add_block_at(board_pos, block)
             if block_added:
                 self.game_state.create_pipes()
                 if block.is_solid:
-                    matrix_pos = self.game_state.board.screen_coords_to_matrix_coords(click_pos)
-                    self.game_state.toggle_smick(matrix_pos)
-                    self.game_state.toggle_coin(matrix_pos)
-        elif self.game_state.editor_screen_rect.collidepoint(click_pos):
-            self.game_state.editor.handle_click(click_pos)
+                    self.game_state.toggle_smick(board_pos)
+                    self.game_state.toggle_coin(board_pos)
+        elif self.view.get_editor_screen_rect().collidepoint(click_pos):
+            self.game_state.editor.handle_click(click_pos) #TODO: fix me! (should get block index from click_pos, set index on editor model)
 
     def handle_keystroke_events(self):
         for event in pg.event.get():
@@ -101,8 +98,7 @@ class Main:
                     self.game_state.move_pipes(colors.GREEN, keys[pg.K_g])
                     self.game_state.update_state()
 
-            self.game_state.board.adjust_view_port(self.game_state.person.pos.x)
-            self.renderer.render(self.game_state)
+            self.view.render(self.game_state)
             pg.display.update()
             time += 1
 
