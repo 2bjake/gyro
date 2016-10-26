@@ -1,10 +1,7 @@
-from blocks import *
-import colors
-
 class Editor:
-    def __init__(self):
+    def __init__(self, blocks):
         self.index = 0
-        self.blocks = [PipeBlock(colors.RED), PipeBlock(colors.BLUE), EmptyBlock(), RopeBlock(), GroundBlock(), DoorBlock()]
+        self.blocks = blocks
 
     def get_selected_block(self):
         return self.blocks[self.index]

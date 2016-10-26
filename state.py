@@ -21,13 +21,14 @@ class GameState:
             self.smicks[smick_pos] = Smick(self.board, smick_pos)
 
         self.coins = {}
-        self.total_coin_count = len(coin_pos_list)
-        self.set_available_coin_count(self.total_coin_count)
         for coin_pos in coin_pos_list:
             self.coins[coin_pos] = Coin(coin_pos)
 
+        self.total_coin_count = len(coin_pos_list)
+        self.set_available_coin_count(self.total_coin_count)
+
         self.editor_enabled = False
-        self.editor = Editor()
+        self.editor = Editor([PipeBlock(colors.RED), PipeBlock(colors.BLUE), EmptyBlock(), RopeBlock(), GroundBlock(), DoorBlock()])
 
     def create_pipes(self):
         self.pipes = defaultdict(list)
