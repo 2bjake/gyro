@@ -33,7 +33,7 @@ class Main:
         click_pos = Point(*pg.mouse.get_pos())
 
         board_screen_rect = self.view.get_board_screen_rect(self.game_state.editor_enabled)
-        if board_screen_rect.collidepoint(click_pos):
+        if board_screen_rect.collidepoint(click_pos): #TODO consider moving this into method on view is_in_board_screen(pos, editor_enabled)
             if left:
                 block = self.game_state.editor.get_selected_block()
             elif right:

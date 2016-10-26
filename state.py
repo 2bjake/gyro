@@ -38,8 +38,8 @@ class GameState:
         self.pipes = defaultdict(list)
 
         x, y = 0, 0
-        while x < self.board.matrix_rect.width:
-            while y < self.board.matrix_rect.height:
+        while x < self.board.rect.width:
+            while y < self.board.rect.height:
                 pos = Point(x, y)
                 block = self.board.get_block(pos)
                 if isinstance(block, PipeBlock):
