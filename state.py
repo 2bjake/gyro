@@ -4,7 +4,7 @@ from board import Board
 from characters import *
 from goals import *
 from pipe import Pipe
-from editorpanel import EditorPanel
+from editor import Editor
 import colors
 from blocks import *
 from point import *
@@ -32,7 +32,7 @@ class GameState:
 
         self.editor_enabled = False
         self.editor_screen_rect = pg.Rect(0, 0, GameState.TEMP_EDITOR_WIDTH, GameState.TEMP_SCREEN_HEIGHT) #TODO: get rid of this
-        self.editor = EditorPanel(self.editor_screen_rect)
+        self.editor = Editor(self.editor_screen_rect)
 
     def create_pipes(self):
         self.pipes = defaultdict(list)

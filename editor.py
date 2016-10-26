@@ -3,7 +3,7 @@ from blocks import *
 import colors
 from renderer import BlockRenderer
 
-class EditorPanel:
+class Editor:
     BORDER_WIDTH = 10
     SELECTOR_WIDTH = 3
 
@@ -23,10 +23,10 @@ class EditorPanel:
         selection_height = self.screen_rect.height / len(self.blocks)
 
         rect = self.screen_rect.copy()
-        rect.height = selection_height - EditorPanel.BORDER_WIDTH * 2
-        rect.width -= EditorPanel.BORDER_WIDTH * 2
-        rect.left += EditorPanel.BORDER_WIDTH
-        rect.top += EditorPanel.BORDER_WIDTH + selection_height * index
+        rect.height = selection_height - Editor.BORDER_WIDTH * 2
+        rect.width -= Editor.BORDER_WIDTH * 2
+        rect.left += Editor.BORDER_WIDTH
+        rect.top += Editor.BORDER_WIDTH + selection_height * index
         return rect
 
     def get_selected_block(self):
