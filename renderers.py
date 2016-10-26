@@ -51,16 +51,17 @@ class BlockRenderer:
 
     DOOR_WIDTH_PERCENTAGE = .7
     DOOR_CRACK_WIDTH = 3
+    DOOR_OPEN_WIDTH = 25
 
     def _render_door_block(self, block, rect):
         door_rect = rect.copy()
         door_rect.width = door_rect.width * BlockRenderer.DOOR_WIDTH_PERCENTAGE
         door_rect.left += (rect.width - door_rect.width) / 2
-        if not block.is_open:
-            pg.draw.rect(self._screen, colors.ORANGE, door_rect)
-            pg.draw.line(self._screen, colors.BLACK, rect.midtop, rect.midbottom, BlockRenderer.DOOR_CRACK_WIDTH)
+        pg.draw.rect(self._screen, colors.ORANGE, door_rect)
+        if block.is_open:
+            pg.draw.line(self._screen, colors.BLACK, rect.midtop, rect.midbottom , BlockRenderer.DOOR_OPEN_WIDTH)
         else:
-            pass #draw open door
+            pg.draw.line(self._screen, colors.BLACK, rect.midtop, rect.midbottom, BlockRenderer.DOOR_CRACK_WIDTH)
 
     GROUND_HEIGHT_PERCENTAGE = .125
     GROUND_MID_LINE_WIDTH = 5

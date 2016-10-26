@@ -1,4 +1,5 @@
 from point import *
+from blocks import DoorBlock
 
 class Character(object):
     def __init__(self, board, start_pos):

@@ -8,7 +8,7 @@ class EmptyBlock(Block):
 
 class DoorBlock(Block):
     def __init__(self):
-        self.is_solid = True
+        self.is_solid = False
         self.is_open = False
 
 class GroundBlock(Block):

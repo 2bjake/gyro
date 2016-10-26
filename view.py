@@ -71,9 +71,14 @@ class View:
         return board_view_rect
 
     def render(self, game_state):
+        if game_state.game_win:
+            self._screen.fill(colors.GREEN)
+            return #TODO: do something better on win!
+
         self._board_view_rect = self._get_in_view_board_rect(game_state) #update in view rect based on game state
 
         self._screen.fill(colors.BLACK)
+
         self._render_board(game_state)
         self._render_pipes(game_state)
 

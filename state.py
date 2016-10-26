@@ -11,7 +11,10 @@ from point import *
 
 class GameState:
     def __init__(self, block_matrix, person_pos, smick_pos_list, coin_pos_list):
+        self.game_win = False
         self.board = Board(block_matrix)
+
+        self.door_pos = self._find_door_pos()
 
         self.create_pipes()
         self.person = Person(self.board, person_pos)
@@ -29,6 +32,29 @@ class GameState:
 
         self.editor_enabled = False
         self.editor = Editor([PipeBlock(colors.RED), PipeBlock(colors.BLUE), EmptyBlock(), RopeBlock(), GroundBlock(), DoorBlock()])
+
+    def _find_door_pos(self):
+        for x in range(self.board.rect.width):
+            for y in range(self.board.rect.height):
+                pos = Point(x, y)
+                block = self.board.get_block(pos)
+                if isinstance(block, DoorBlock):
+                    return pos
+        return None
+
+    def add_block(self, block, pos):
+        block_added = self.board.add_block_at(pos, block)
+        if block_added:
+            if isinstance(block, DoorBlock):
+                if self.door_pos is not None and pos != self.door_pos:
+                    self.board.add_block_at(self.door_pos, EmptyBlock())
+                self.door_pos = pos
+                self.update_door()
+
+            self.create_pipes()
+            if block.is_solid:
+                self.toggle_smick(pos)
+                self.toggle_coin(pos)
 
     def create_pipes(self):
         self.pipes = defaultdict(list)
@@ -97,14 +123,15 @@ class GameState:
 
     def set_available_coin_count(self, count):
         self.available_coin_count = count
-        print(self.available_coin_count)
+        self.update_door()
 
-        if self.available_coin_count == 0:
-            pass #open the door
-        else:
-            pass #close the door
+    def update_door(self):
+        if self.door_pos is not None:
+            door_block = self.board.get_block(self.door_pos)
+            door_block.is_open = self.available_coin_count == 0
 
     def reset(self):
+        self.game_win = False
         self.person.reset()
         self.reset_smicks()
         self.reset_coins()
@@ -136,3 +163,9 @@ class GameState:
         if coin is not None and coin.is_available:
             coin.is_available = False
             self.set_available_coin_count(self.available_coin_count - 1)
+
+        if self.person.pos == self.door_pos:
+            door_block = self.board.get_block(self.door_pos)
+            if door_block.is_open:
+                self.game_win = True
+

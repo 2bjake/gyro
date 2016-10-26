@@ -99,10 +99,13 @@ def write_to_file(game_state):
                     c = '|'
             elif isinstance(block, GroundBlock):
                 c = 'I'
+            elif isinstance(block, DoorBlock):
+                c = 'D'
             elif isinstance(block, PipeBlock) and block.color == colors.BLUE:
                 c = 'B'
             elif isinstance(block, PipeBlock) and block.color == colors.RED:
                 c = 'R'
+
 
             line += c
         lines.append(line)

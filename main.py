@@ -39,12 +39,7 @@ class Main:
             elif right:
                 block = EmptyBlock()
             board_pos = self.view.get_board_position_for_screen_position(click_pos, self.game_state.editor_enabled)
-            block_added = self.game_state.board.add_block_at(board_pos, block)
-            if block_added:
-                self.game_state.create_pipes()
-                if block.is_solid:
-                    self.game_state.toggle_smick(board_pos)
-                    self.game_state.toggle_coin(board_pos)
+            self.game_state.add_block(block, board_pos)
         elif self.view.get_editor_screen_rect().collidepoint(click_pos):
             block_index = self.view.get_editor_selection_index_for_click(click_pos, self.game_state.editor)
             if block_index is not None:
