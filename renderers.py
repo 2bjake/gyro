@@ -140,33 +140,3 @@ class PipeRenderer:
 
         anchor_rect.left += (block_width - anchor_rect.width)
         pg.draw.rect(self._screen, PipeRenderer.ANCHOR_COLOR, anchor_rect)
-
-class EditorRenderer:
-    BORDER_WIDTH = 10
-    SELECTOR_WIDTH = 3
-
-    def __init__(self, screen, block_renderer):
-        self._screen = screen
-        self._block_renderer = block_renderer
-
-    #TODO: almost all of this is the same for every call
-    def _get_block_rect_for_index(self, block_index, total_blocks, editor_rect):
-        selection_height = editor_rect.height / total_blocks
-
-        block_rect = editor_rect.copy()
-        block_rect.height = selection_height - EditorRenderer.BORDER_WIDTH * 2
-        block_rect.width -= EditorRenderer.BORDER_WIDTH * 2
-        block_rect.left += EditorRenderer.BORDER_WIDTH
-        block_rect.top += EditorRenderer.BORDER_WIDTH + selection_height * block_index
-        return block_rect
-
-    def render(self, editor, rect):
-        pg.draw.rect(self._screen, colors.GREY, rect)
-        total_blocks = len(editor.blocks)
-        for i in range(total_blocks):
-            block_rect = self._get_block_rect_for_index(i, total_blocks, rect) #TODO: fix this
-            block = editor.blocks[i]
-            pg.draw.rect(self._screen, colors.BLACK, block_rect)
-            self._block_renderer.render_block(block, block_rect)
-            if editor.index == i:
-                pg.draw.rect(self._screen, colors.YELLOW, block_rect, EditorRenderer.SELECTOR_WIDTH)

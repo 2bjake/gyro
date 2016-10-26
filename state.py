@@ -10,10 +10,6 @@ from blocks import *
 from point import *
 
 class GameState:
-    #TODO remove these
-    TEMP_SCREEN_HEIGHT = 500
-    TEMP_EDITOR_WIDTH = 80
-
     def __init__(self, block_matrix, person_pos, smick_pos_list, coin_pos_list):
         self.board = Board(block_matrix)
 
@@ -31,8 +27,7 @@ class GameState:
             self.coins[coin_pos] = Coin(coin_pos)
 
         self.editor_enabled = False
-        self.editor_screen_rect = pg.Rect(0, 0, GameState.TEMP_EDITOR_WIDTH, GameState.TEMP_SCREEN_HEIGHT) #TODO: get rid of this
-        self.editor = Editor(self.editor_screen_rect)
+        self.editor = Editor()
 
     def create_pipes(self):
         self.pipes = defaultdict(list)

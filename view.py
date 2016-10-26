@@ -26,7 +26,6 @@ class View:
         self._pipe_renderer = PipeRenderer(self._screen)
         self._coin_renderer = CoinRenderer(self._screen)
         self._block_renderer = BlockRenderer(self._screen)
-        self._editor_renderer = EditorRenderer(self._screen, self._block_renderer)
 
     def _get_render_rect_for_board_position(self, pos, editor_enabled):
         screen_pos = self._get_screen_coords_for_board_position(pos, editor_enabled)
@@ -94,7 +93,7 @@ class View:
 
         # render editor
         if game_state.editor_enabled:
-            self._editor_renderer.render(game_state.editor, self._editor_screen_rect)
+            self._render_editor(game_state.editor)
 
     def _render_board(self, game_state):
         for x in range(self._board_view_rect.left, self._board_view_rect.right):
@@ -113,3 +112,36 @@ class View:
                     anchor_render_rect = self._get_render_rect_for_board_position(pipe.anchor_pos, game_state.editor_enabled)
                     self._pipe_renderer.render_details(pipe, top_render_rect, bottom_render_rect, anchor_render_rect)
 
+
+    EDITOR_BORDER_WIDTH = 10
+    EDITOR_SELECTOR_WIDTH = 3
+
+    def _render_editor(self, editor):
+        pg.draw.rect(self._screen, colors.GREY, self._editor_screen_rect)
+        total_blocks = len(editor.blocks)
+        for i in range(total_blocks):
+            block_rect = self._get_editor_block_rect_for_index(i, total_blocks)
+            block = editor.blocks[i]
+            pg.draw.rect(self._screen, colors.BLACK, block_rect)
+            self._block_renderer.render_block(block, block_rect)
+            if editor.index == i:
+                pg.draw.rect(self._screen, colors.YELLOW, block_rect, View.EDITOR_SELECTOR_WIDTH)
+
+
+    #TODO: almost all of this is the same for every call
+    def _get_editor_block_rect_for_index(self, block_index, total_blocks):
+        selection_height = self._editor_screen_rect.height / total_blocks
+
+        block_rect = self._editor_screen_rect.copy()
+        block_rect.height = selection_height - View.EDITOR_BORDER_WIDTH * 2
+        block_rect.width = block_rect.height
+        block_rect.left += View.EDITOR_BORDER_WIDTH
+        block_rect.top += View.EDITOR_BORDER_WIDTH + selection_height * block_index
+        return block_rect
+
+    def get_editor_selection_index_for_click(self, click_pos, editor):
+        total_blocks = len(editor.blocks)
+        for i in range(total_blocks):
+            if self._get_editor_block_rect_for_index(i, total_blocks).collidepoint(click_pos):
+                return i
+        return None

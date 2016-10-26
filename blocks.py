@@ -1,6 +1,3 @@
-import pygame as pg
-import colors
-
 class Block:
     def __init__(self):
         self.is_solid = True

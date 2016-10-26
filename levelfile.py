@@ -2,6 +2,7 @@ from blocks import *
 import datetime
 from point import Point
 from state import GameState
+import colors
 
 def create_from_file(file_name):
     with open(file_name,'r') as f:

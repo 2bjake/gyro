@@ -1,7 +1,3 @@
-import colors
-import pygame as pg
-from point import Point
-
 class Coin:
     def __init__(self, pos):
         self.pos = pos

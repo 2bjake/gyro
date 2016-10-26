@@ -46,7 +46,9 @@ class Main:
                     self.game_state.toggle_smick(board_pos)
                     self.game_state.toggle_coin(board_pos)
         elif self.view.get_editor_screen_rect().collidepoint(click_pos):
-            self.game_state.editor.handle_click(click_pos) #TODO: fix me! (should get block index from click_pos, set index on editor model)
+            block_index = self.view.get_editor_selection_index_for_click(click_pos, self.game_state.editor)
+            if block_index is not None:
+                self.game_state.editor.index = block_index
 
     def handle_keystroke_events(self):
         for event in pg.event.get():

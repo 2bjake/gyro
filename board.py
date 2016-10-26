@@ -1,13 +1,9 @@
-from blocks import *
-import colors
-import pygame as pg
-from pipe import Pipe
-from point import Point
+from pygame import Rect
 
 class Board:
     def __init__(self, block_matrix):
         self.block_matrix = block_matrix
-        self.rect = pg.Rect(0, 0, len(block_matrix), len(block_matrix[0]))
+        self.rect = Rect(0, 0, len(block_matrix), len(block_matrix[0]))
 
     def is_inside_border(self, pos):
         return (self.rect.left < pos.x < self.rect.right - 1 and

@@ -1,5 +1,3 @@
-import colors
-import blocks
 from point import *
 
 class Character(object):

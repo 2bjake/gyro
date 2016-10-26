@@ -1,6 +1,4 @@
-from blocks import PipeBlock, EmptyBlock
-import pygame as pg
-import colors
+from blocks import EmptyBlock
 from point import *
 
 class Pipe:
