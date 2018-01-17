@@ -5,6 +5,7 @@ from board import *
 from pipe import *
 from blocks import *
 import colors
+import inputbox
 
 class View:
     EDITOR_WIDTH = 80
@@ -26,6 +27,9 @@ class View:
         self._pipe_renderer = PipeRenderer(self._screen)
         self._coin_renderer = CoinRenderer(self._screen)
         self._block_renderer = BlockRenderer(self._screen)
+
+    def ask_for_level_name(self):
+        return inputbox.ask(self._screen, "level name")
 
     def _get_render_rect_for_board_position(self, pos, editor_enabled):
         screen_pos = self._get_screen_coords_for_board_position(pos, editor_enabled)

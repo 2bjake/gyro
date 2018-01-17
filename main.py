@@ -1,4 +1,5 @@
 import sys
+import os
 import pygame as pg
 from pygame.locals import *
 import levelfile
@@ -13,16 +14,20 @@ def is_key_event(event, type, *args):
 class Main:
     SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 500
 
-    #LEVEL = "jess_first"
-    LEVEL = "miles_first"
-    #LEVEL = "empty"
-    #LEVEL = "scrolling_colorful"
-
     def __init__(self):
         pg.init()
         self.clock = pg.time.Clock()
         self.view = View(Main.SCREEN_WIDTH, Main.SCREEN_HEIGHT)
-        self.game_state = levelfile.create_from_file("levels/" + Main.LEVEL)
+        self.levels = os.listdir("levels")
+        self.level_index = 0
+        self.load_level(self.levels[self.level_index])
+
+    def load_next_level(self):
+        self.level_index = (self.level_index + 1) % len(self.levels)
+        self.load_level(self.levels[self.level_index])
+
+    def load_level(self, level_name):
+        self.game_state = levelfile.create_from_file("levels/" + level_name)
 
     def handle_mouse_events(self):
         (left, middle, right) = pg.mouse.get_pressed()
@@ -52,10 +57,15 @@ class Main:
                 sys.exit()
             if is_key_event(event, KEYUP, K_o): # reset
                 self.game_state.reset()
+            if is_key_event(event, KEYUP, K_l): # load next level
+                self.load_next_level()
             if is_key_event(event, KEYUP, K_p): # toggle editor
                 self.game_state.toggle_editor()
             if is_key_event(event, KEYUP, K_x): # save level
-                levelfile.write_to_file(self.game_state)
+                level_name = self.view.ask_for_level_name()
+                levelfile.write_to_file(self.game_state, level_name)
+                self.levels.append(level_name)
+                self.level_index = len(self.levels) - 1
             if is_key_event(event, KEYUP, K_s) and self.game_state.editor_enabled: # toggle smick (only in editor mode)
                 self.game_state.toggle_smick(self.game_state.person.pos)
             if is_key_event(event, KEYUP, K_c) and self.game_state.editor_enabled: # toggle coin (only in editor mode)
@@ -94,6 +104,8 @@ class Main:
                     self.game_state.move_pipes(colors.YELLOW, keys[pg.K_y])
                     self.game_state.move_pipes(colors.GREEN, keys[pg.K_g])
                     self.game_state.update_state()
+                    if self.game_state.game_win:
+                        self.load_next_level()
 
             self.view.render(self.game_state)
             pg.display.update()

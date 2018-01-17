@@ -62,7 +62,7 @@ def create_from_file(file_name):
 
         return GameState(block_matrix, person_pos, smick_pos_list, coin_pos_list)
 
-def write_to_file(game_state):
+def write_to_file(game_state, level_name):
     block_matrix = game_state.board.block_matrix
     width = len(block_matrix)
     height = len(block_matrix[0])
@@ -111,8 +111,8 @@ def write_to_file(game_state):
         lines.append(line)
 
     lines.reverse()
-
-    file_name = "levels/" + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
+    file_name = "levels/" + level_name
     f = open(file_name, 'w')
     f.write("\n".join(lines))
     f.close()
+    return level_name
